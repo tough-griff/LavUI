@@ -1,0 +1,10 @@
+## Interface: 100200
+## Title: LavUI
+## Version: 1.0.0
+## Notes: Lavernius UI Utilities
+## Author: Lavernius
+## DefaultState: enabled
+## SavedVariables: LavUIDB
+## RequiredDeps: ElvUI
+
+LavUI.lua
