@@ -4,8 +4,7 @@
 ## Notes: Lavernius UI Utilities
 ## Author: Lavernius
 ## IconTexture: 626008
-## DefaultState: enabled
-## SavedVariables: LavUIDB
-## RequiredDeps: ElvUI
+## RequiredDeps: Details, ElvUI
 
 LavUI.lua
+Utils.lua

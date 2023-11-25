@@ -2,6 +2,7 @@
 
 ```lua
 if Details.zone_type == "party" then
+    LUI:TogglePanel(true)
     if Details:GetInstance(2):IsStarted() then
         Details:GetInstance(2):SetDisplay(
             DETAILS_SEGMENTID_OVERALL,

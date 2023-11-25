@@ -1,23 +1,28 @@
-local _, LUI = ...
+local E, L, V, P, G = unpack(ElvUI)
+local addonName, addon = ...
+
 local _G = _G
+local LavUI = E:NewModule(addonName)
+local Utils = {}
+V.LUI = {}
+P.LUI = {}
+G.LUI = {}
 
-_G.LUI = LUI
+addon[1] = LavUI
+addon[2] = Utils
+addon[3] = E
+addon[4] = L
+addon[5] = V.LUI
+addon[6] = P.LUI
+addon[7] = G.LUI
+_G[addonName] = addon
+_G["LUI"] = Utils
 
-function LUI:InCombat()
-    return InCombatLockdown() or UnitAffectingCombat('player') or UnitAffectingCombat('pet')
+function LavUI:InsertOptions()
 end
 
-function LUI:Delay(seconds, callback)
-    return C_Timer.After(seconds, callback)
+function LavUI:Initialize()
+    E.Libs.EP:RegisterPlugin(addonName, LavUI:InsertOptions())
 end
 
-function LUI:TogglePanel(hide)
-    local Panel = _G.RightChatPanel
-    if (hide) then
-        Panel:Hide()
-        Details:ReabrirTodasInstancias()
-    else
-        Panel:Show()
-        Details:ShutDownAllInstances()
-    end
-end
+E:RegisterModule(addonName)
