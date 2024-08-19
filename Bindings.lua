@@ -1,0 +1,3 @@
+BINDING_HEADER_LUI = "LavUI"
+BINDING_NAME_LUITOGGLEBARS = "Toggle ActionBar Visibility"
+BINDING_NAME_LUITOGGLEPANEL = "Toggle Right Panel"

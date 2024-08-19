@@ -1,0 +1,9 @@
+<Bindings>
+    <Binding category="BINDING_HEADER_LUI" name="LUITOGGLEBARS">
+        LUI:ToggleBars()
+    </Binding>
+
+    <Binding category="BINDING_HEADER_LUI" name="LUITOGGLEPANEL">
+        LUI:TogglePanel()
+    </Binding>
+</Bindings>

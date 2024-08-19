@@ -1,10 +1,10 @@
-## Interface: 100200
-## Title: |cffffccffLavUI
-## Version: 0.1.0
+## Interface: 110002
+## Title: |cffffccffLavUI|r
+## Version: 0.2.0
 ## Notes: Lavernius UI Utilities
 ## Author: Lavernius
 ## IconTexture: 626008
 ## RequiredDeps: Details, ElvUI
 
 LavUI.lua
-Utils.lua
+Bindings.lua

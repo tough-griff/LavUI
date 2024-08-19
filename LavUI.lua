@@ -1,28 +1,34 @@
-local E, L, V, P, G = unpack(ElvUI)
-local addonName, addon = ...
-
+---@class LavUI
+local LUI = select(2, ...)
 local _G = _G
-local LavUI = E:NewModule(addonName)
-local Utils = {}
-V.LUI = {}
-P.LUI = {}
-G.LUI = {}
+local E = unpack(ElvUI)
 
-addon[1] = LavUI
-addon[2] = Utils
-addon[3] = E
-addon[4] = L
-addon[5] = V.LUI
-addon[6] = P.LUI
-addon[7] = G.LUI
-_G[addonName] = addon
-_G["LUI"] = Utils
+_G["LUI"] = LUI
 
-function LavUI:InsertOptions()
+function LUI:InCombat()
+    return InCombatLockdown() or UnitAffectingCombat('player') or UnitAffectingCombat('pet')
 end
 
-function LavUI:Initialize()
-    E.Libs.EP:RegisterPlugin(addonName, LavUI:InsertOptions())
+function LUI:Delay(seconds, callback)
+    return C_Timer.After(seconds, callback)
 end
 
-E:RegisterModule(addonName)
+function LUI:ToggleBars()
+    for _, n in pairs({ 1, 3, 4, 5, 6, 13, 14, 15 }) do
+        E.db.actionbar["bar" .. n].mouseover = not E.db.actionbar["bar" .. n].mouseover
+        E.ActionBars:PositionAndSizeBar("bar" .. n)
+    end
+end
+
+function LUI:TogglePanel(hide)
+    local Panel = RightChatPanel
+    if hide == true then
+        Panel:Hide()
+        Details:ReabrirTodasInstancias()
+    elseif hide == false then
+        Panel:Show()
+        Details:ShutDownAllInstances()
+    else
+        LUI:TogglePanel(Panel:IsShown())
+    end
+end
