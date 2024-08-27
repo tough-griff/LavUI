@@ -1,0 +1,1 @@
+SLASH_BTWQUESTS2 = "/btwq"

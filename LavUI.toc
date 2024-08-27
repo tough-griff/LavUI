@@ -8,3 +8,4 @@
 
 LavUI.lua
 Bindings.lua
+Commands.lua

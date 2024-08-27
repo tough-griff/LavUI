@@ -3,12 +3,14 @@ local LUI = select(2, ...)
 local _G = _G
 local E = unpack(ElvUI)
 
-_G["LUI"] = LUI
+_G.LUI = LUI
 
 function LUI:InCombat()
     return InCombatLockdown() or UnitAffectingCombat('player') or UnitAffectingCombat('pet')
 end
 
+---@param seconds number
+---@param callback TimerCallback
 function LUI:Delay(seconds, callback)
     return C_Timer.After(seconds, callback)
 end
@@ -20,7 +22,9 @@ function LUI:ToggleBars()
     end
 end
 
+---@param hide? boolean
 function LUI:TogglePanel(hide)
+    ---@class Frame
     local Panel = RightChatPanel
     if hide == true then
         Panel:Hide()
