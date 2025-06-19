@@ -3,7 +3,7 @@ local LUI = select(2, ...)
 local _G = _G
 local E = unpack(ElvUI)
 
-_G.LUI = LUI
+setglobal("LUI", LUI)
 
 function LUI:InCombat()
     return InCombatLockdown() or UnitAffectingCombat('player') or UnitAffectingCombat('pet')
