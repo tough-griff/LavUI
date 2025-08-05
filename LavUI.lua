@@ -1,9 +1,8 @@
 ---@class LavUI
 local LUI = select(2, ...)
-local _G = _G
-local E = unpack(ElvUI)
-
 setglobal("LUI", LUI)
+
+local E = unpack(ElvUI)
 
 function LUI:InCombat()
     return InCombatLockdown() or UnitAffectingCombat('player') or UnitAffectingCombat('pet')
@@ -17,8 +16,9 @@ end
 
 function LUI:ToggleBars()
     for _, n in pairs({ 1, 3, 4, 5, 6, 13, 14, 15 }) do
-        E.db.actionbar["bar" .. n].mouseover = not E.db.actionbar["bar" .. n].mouseover
-        E.ActionBars:PositionAndSizeBar("bar" .. n)
+        local bar = "bar" .. n
+        E.db.actionbar[bar].mouseover = not E.db.actionbar[bar].mouseover
+        E.ActionBars:PositionAndSizeBar(bar)
     end
 end
 

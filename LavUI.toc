@@ -1,10 +1,10 @@
-## Interface: 110107
+## Interface: 110200
 ## Title: |cffffccffLavUI|r
 ## Version: @project-version@
-## Notes: Lavernius UI Utilities
+## Notes: Lav's UI Utilities
 ## Author: Lavernius
 ## IconTexture: 626008
-## RequiredDeps: Details, ElvUI
+## Dependencies: Details, ElvUI
 
 LavUI.lua
 Bindings.lua
