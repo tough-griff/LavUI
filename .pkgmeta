@@ -1,0 +1,5 @@
+package-as: LavUI
+
+ignore:
+  - '*.cmd'
+  - '*.sh'
