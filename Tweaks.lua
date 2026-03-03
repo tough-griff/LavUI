@@ -428,8 +428,6 @@ function LUI:ApplyElvUITweaks()
         -- Minimap
         E.global.datatexts.customPanels.Clock.width = 265
         E.global.datatexts.customPanels.Clock.textJustify = "CENTER"
-        SetValue(profiles.elv.dps, "movers.DTPanelClockMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-3,-250")
-        SetValue(profiles.elv.healer, "movers.DTPanelClockMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-3,-250")
 
         SetValue(profiles.elv.dps, "general.minimap.scale", 1.25)
         SetValue(profiles.elv.healer, "general.minimap.scale", 1.25)
@@ -518,8 +516,8 @@ function LUI:ApplyElvUITweaks()
         SetValue(profiles.elv.dps, "movers.BuffsMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-269,-3")
         SetValue(profiles.elv.healer, "movers.BuffsMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-269,-3")
 
-        SetValue(profiles.elv.dps, "movers.DebuffsMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-269,-213")
-        SetValue(profiles.elv.healer, "movers.DebuffsMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-269,-213")
+        SetValue(profiles.elv.dps, "movers.DebuffsMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-269,-229")
+        SetValue(profiles.elv.healer, "movers.DebuffsMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-269,-229")
 
         SetValue(profiles.elv.dps, "movers.QueueStatusMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-8,-210")
         SetValue(profiles.elv.healer, "movers.QueueStatusMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-8,-210")
@@ -669,7 +667,7 @@ function LUI:ApplyDetailsTweaks()
                     -- Main damage window
                     if id == 1 then
                         position.x = -config.elvUI.panelWidth / 2 - 4
-                        position.h = config.elvUI.panelWidth - 26
+                        position.h = config.elvUI.panelHeight - 26
                     end
 
                     -- Healing window

@@ -4,47 +4,11 @@ local addon = select(2, ...)
 local LUI = LibStub("AceAddon-3.0"):NewAddon(addon, "LavUI", "AceHook-3.0")
 setglobal("LUI", LUI)
 
--- Utils --
-function LUI:Debug(data, dataName)
-    if DevTool and data then
-        DevTool:AddData(data, format("[LavUI] %s", dataName or "Debug"))
-    end
-end
-
-function LUI:InCombat()
-    return InCombatLockdown() or UnitAffectingCombat('player') or UnitAffectingCombat('pet')
-end
-
-function LUI:Split(text, token)
-    if token == nil then
-        token = "%s"
-    end
-    local t = {}
-    for str in string.gmatch(text, "([^" .. token .. "]+)") do
-        table.insert(t, str)
-    end
-    return t
-end
-
-function LUI:StartsWithIgnoreCase(val, starts)
-    local lowerVal = string.lower(val)
-    local lowerStarts = string.lower(starts)
-
-    return string.sub(lowerVal, 1, #lowerStarts) == lowerStarts
-end
-
-function LUI:ContainsIgnoreCase(val, search)
-    local lowerVal = string.lower(val)
-    local lowerSearch = string.lower(search)
-
-    return string.find(lowerVal, lowerSearch, 1, true) ~= nil
-end
-
 local actionBars = {
     "bar1", "bar3", "bar4", "bar5", "bar6", "bar13", "bar14", "bar15", "barPet"
 }
 
--- Bindings and helper functions --
+--- Toggle the mouseover state of the (default) hidden action bars.
 function LUI:ToggleBars()
     if not ElvUI then return end
     local E = unpack(ElvUI)
@@ -57,6 +21,8 @@ function LUI:ToggleBars()
     end
 end
 
+--- Toggle the right chat panel and Details windows. Sorta like the old AddOnSkins
+--- functionality.
 ---@param hide? boolean
 function LUI:TogglePanel(hide)
     if not Details or not RightChatPanel then return end
@@ -74,6 +40,8 @@ function LUI:TogglePanel(hide)
     end
 end
 
+--- Add the 'classcolor:target' tag to ElvUI since they removed it but it still
+--- seems to function just fine.
 function LUI:AddElvUITags()
     if not ElvUI then return end
     local E = unpack(ElvUI)
@@ -100,8 +68,10 @@ function LUI:OnInitialize()
 end
 
 function LUI:OnEnable()
-    self:LoadProfiles() -- Mostly for debug
-
     self:ApplyScaling()
     self:AddElvUITags()
+end
+
+function LUI:OnDisable()
+    self:UnhookAll()
 end

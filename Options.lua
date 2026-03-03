@@ -197,8 +197,10 @@ function LUI:GetOptions()
                                 name = "Action bars?",
                                 desc = "Should we use a different action bar setup that is more " ..
                                     "compatible with the base UI and other action bar addons? " ..
-                                    "This will require changing your keybindings as well.",
+                                    "This will likely require changing your keybindings.",
                                 type = "toggle",
+                                confirm = true,
+                                confirmText = "This will change your action bar layout dramatically. Are you sure?",
                                 set = function(_, val) self.db.global.atrocityUI.elvUI.actionbars = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.actionbars end
                             },

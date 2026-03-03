@@ -11,6 +11,7 @@
 embeds.xml
 
 LavUI.lua
+Utils.lua
 Options.lua
 Bindings.lua
 Commands.lua
