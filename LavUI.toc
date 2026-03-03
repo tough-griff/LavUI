@@ -5,7 +5,14 @@
 ## Author: Lavernius
 ## IconTexture: 626008
 ## OptionalDependencies: Details, ElvUI
+## SavedVariables: LavUIDB
+
+# Dependencies
+embeds.xml
 
 LavUI.lua
+Options.lua
 Bindings.lua
 Commands.lua
+Scaling.lua
+Tweaks.lua

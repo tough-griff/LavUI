@@ -80,7 +80,7 @@ LUI:TogglePanel(true)
 ## Details On Leave Combat
 
 ```lua
-LUI:Delay(10, function()
+C_Timer.After(10, function()
         if not LUI:InCombat() then
             LUI:TogglePanel(false)
         end

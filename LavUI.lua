@@ -1,17 +1,46 @@
----@class LavUI
-local LUI = select(2, ...)
+local addon = select(2, ...)
+
+--- @class LUI: AceAddon, AceHook-3.0
+local LUI = LibStub("AceAddon-3.0"):NewAddon(addon, "LavUI", "AceHook-3.0")
 setglobal("LUI", LUI)
+
+-- Utils --
+function LUI:Debug(data, dataName)
+    if DevTool and data then
+        DevTool:AddData(data, format("[LavUI] %s", dataName or "Debug"))
+    end
+end
 
 function LUI:InCombat()
     return InCombatLockdown() or UnitAffectingCombat('player') or UnitAffectingCombat('pet')
 end
 
----@param seconds number
----@param callback TimerCallback
-function LUI:Delay(seconds, callback)
-    return C_Timer.After(seconds, callback)
+function LUI:Split(text, token)
+    if token == nil then
+        token = "%s"
+    end
+    local t = {}
+    for str in string.gmatch(text, "([^" .. token .. "]+)") do
+        table.insert(t, str)
+    end
+    return t
 end
 
+function LUI:StartsWithIgnoreCase(val, starts)
+    local lowerVal = string.lower(val)
+    local lowerStarts = string.lower(starts)
+
+    return string.sub(lowerVal, 1, #lowerStarts) == lowerStarts
+end
+
+function LUI:ContainsIgnoreCase(val, search)
+    local lowerVal = string.lower(val)
+    local lowerSearch = string.lower(search)
+
+    return string.find(lowerVal, lowerSearch, 1, true) ~= nil
+end
+
+-- Bindings and helper functions --
 function LUI:ToggleBars()
     if not ElvUI then return end
     local E = unpack(ElvUI)
@@ -27,10 +56,10 @@ end
 
 ---@param hide? boolean
 function LUI:TogglePanel(hide)
+    if not Details or not RightChatPanel then return end
+
     ---@class Frame
     local Panel = RightChatPanel
-    if not Details then return end
-
     if hide == true then
         Panel:Hide()
         Details:ReabrirTodasInstancias()
@@ -38,63 +67,46 @@ function LUI:TogglePanel(hide)
         Panel:Show()
         Details:ShutDownAllInstances()
     else
-        LUI:TogglePanel(Panel:IsShown())
+        self:TogglePanel(Panel:IsShown())
     end
 end
 
-function LUI:ApplyDetailsTweaks()
-    if not Details then return end
+function LUI:AddElvUITags()
+    if not ElvUI then return end
+    local E = unpack(ElvUI)
 
-    -- We don't do the normal SetValue stuff for Details, because if you modify *some* profile values (like tooltip)
-    -- without using the global "Details" table, the settings are not persisted.
-    for _, profile in ipairs(Details:GetProfileList()) do
-        if profile == "atrocityUI" then
-            local dtp = Details:GetProfile(profile)
-
-            -- Apply the profile first, so that references to Details below will resolve the correct profile.
-            Details:ApplyProfile(profile)
-
-            Details.tooltip.fontsize = 14
-            Details.tooltip.fontsize_title = 14
-            dtp.font_sizes = { menus = 14 }
-
-            for id, instance in Details:ListInstances() do
-                instance:SetBarTextSettings(14)
-                instance:AttributeMenu(nil, nil, nil, nil, 14)
-
-                local position = instance:CreatePositionTable()
-
-                position.w = 255
-
-                -- Main damage window
-                if id == 1 then
-                    position.x = -261
-                    position.h = 242
-                end
-
-                -- Healing window
-                if id == 2 then
-                    position.y = 125
-                end
-
-                -- Deaths window
-                if id == 3 then
-                    position.h = 99
-                end
-
-                -- DevTool:AddData(position, "Details Instance " .. id .. " Position")
-                instance:RestorePositionFromPositionTable(position)
+    E:AddTag('classcolor:target', 'UNIT_TARGET', function(unit, ...)
+        local target = unit .. 'target'
+        if UnitExists(target) then
+            if UnitIsPlayer(target) or (E.Retail and UnitInPartyIsAI(target)) then
+                local _, classToken = UnitClass(target)
+                -- Check that this doesn't blow up with secrets
+                local cs = E.oUF.colors.class[classToken]
+                return cs and Hex(cs) or HEX_FALLBACK
+            else
+                local cr = E.oUF.colors.reaction[UnitReaction(target, 'player')]
+                return cr and Hex(cr) or HEX_FALLBACK
             end
-
-            -- Re-position tooltip for ultra-wide
-            Details.tooltip.anchored_to = 2
-            Details.tooltip.anchor_point = "bottomright"
-            Details.tooltip.anchor_relative = "bottomright"
-            Details.tooltip.anchor_offset = { 0, -6 }
-
-            Details.tooltip.anchor_screen_pos = { 1144, -710 }
-
-            Details:SaveProfile(profile)
         end
-    end
+    end)
+end
+
+function LUI:OnInitialize()
+    self.db = LibStub("AceDB-3.0"):New("LavUIDB", self:GetDefaults(), DEFAULT)
+    LibStub("AceConfig-3.0"):RegisterOptionsTable("LavUI", self:GetOptions())
+    local _, category = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("LavUI")
+    LibStub("AceConsole-3.0"):RegisterChatCommand("lui", function(input)
+        if not input or input:trim() == "" then
+            Settings.OpenToCategory(category)
+        else
+            LibStub("AceConfigCmd-3.0").HandleCommand(self, "lui", "LavUI", input)
+        end
+    end)
+end
+
+function LUI:OnEnable()
+    self:LoadProfiles() -- Mostly for debug
+
+    self:ApplyScaling()
+    self:AddElvUITags()
 end
