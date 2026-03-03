@@ -11,5 +11,6 @@ externals:
   Libs/LibStub: https://repos.wowace.com/wow/libstub/trunk
 
 ignore:
+  - Libs/LibStub/tests
   - '*.cmd'
   - '*.sh'
