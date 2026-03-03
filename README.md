@@ -1,88 +1,48 @@
-## Details On Zone Changed
+# LavUI
 
-```lua
-if Details.zone_type == "party" then
-    LUI:TogglePanel(true)
+This project was originally a few small utilities that weren't covered by existing
+tools. After 12.0 broke [ZoxeTweaks](https://github.com/geek0x23/ZoxeTweaks) I've
+ported over most of his extremely helpful changes and added a few of my own.
 
-    if Details:GetInstance(2):IsStarted() then
-        Details:GetInstance(2):SetDisplay(
-            DETAILS_SEGMENTID_OVERALL,
-            DETAILS_ATTRIBUTE_DAMAGE,
-            DETAILS_SUBATTRIBUTE_DAMAGEDONE
-        )
-    end
+From Zoxe:
 
-    if Details:GetInstance(3):IsStarted() then
-        Details:GetInstance(3):SetDisplay(
-            DETAILS_SEGMENTID_OVERALL,
-            DETAILS_ATTRIBUTE_MISC,
-            DETAILS_SUBATTRIBUTE_DEATH
-        )
-    end
-end
+> This project exists to help me accomplish 3 goals:
+>
+> 1. **Make AtrocityUI more visible to me.** Fonts, chat panels, and a few other
+>    things here and there are just too small for me to see. My eyes aren't what
+>    they used to be.
+> 2. **Fix WoW's absolutely busted scaling at 1440p.** To get pixel-perfect
+>    WeakAuras, AtrocityUI sets the global UI scale to a very small number. As a
+>    side effect, all of the default Blizzard frames become very small. This
+>    repo contains a small addon that manually scales individual frames
+>    **without** scaling `UIParent`. This is intentional so I don't break the
+>    pixel-perfect scaling for WeakAuras. There's probably a more elegant way to
+>    do this, so if you have ideas please share!
+> 3. **Support ultrawide gaming at 3440 x 1440.** I have a bunch of settings
+>    that I like to tweak for all the various addons included with AtrocityUI
+>    (plus Shadow & Light). I got tired of doing it manually, so I wrote a
+>    script.
+>
+> I have not completely scaled every frame in the game. I've just been scaling
+> them as I encounter them. I will update this code as I encounter more.
 
-if Details.zone_type == "raid" then
-    LUI:TogglePanel(true)
+## Usage
 
-    if Details:GetInstance(2):IsStarted() then
-        Details:GetInstance(2):SetDisplay(
-            DETAILS_SEGMENTID_CURRENT,
-            DETAILS_ATTRIBUTE_HEAL,
-            DETAILS_SUBATTRIBUTE_HEALDONE
-        )
-    end
+Once installed, use the `/lui` command in-game to bring up the configuration
+options. You'll also find it in the default Blizzard addon options. If you
+chose to change the **scale factor**, please remember to reload your UI
+(or relog).
 
-    if Details:GetInstance(3):IsStarted() then
-        Details:GetInstance(3):SetDisplay(
-            DETAILS_SEGMENTID_CURRENT,
-            DETAILS_ATTRIBUTE_MISC,
-            DETAILS_SUBATTRIBUTE_DEATH
-        )
-    end
-end
+## AtrocityUI Tweaks
 
-if Details.zone_type == "none" then
-    LUI:TogglePanel(false)
+If you'd like to use my tweaks for AtrocityUI, follow these steps whenever
+Atrocity releases a new version of his UI:
 
-    if Details:GetInstance(2):IsStarted() then
-        Details:GetInstance(2):SetDisplay(
-            DETAILS_SEGMENTID_CURRENT,
-            DETAILS_ATTRIBUTE_HEAL,
-            DETAILS_SUBATTRIBUTE_HEALDONE
-        )
-    end
+- Install the [AtrocityUI pack](https://uipacks.wago.io/user/59dabe91b7ebeeaf72eec80a)
+  of your choice. You will need the [Wago App](https://addons.wago.io/app) for
+  this.
+- Run the Wago installer: `/wago` (highly recommended).
+- Run LavUI (`/lui`). Choose which AtrocityUI Tweaks you'd like and click `Apply`.
 
-    if Details:GetInstance(3):IsStarted() then
-        Details:GetInstance(3):SetDisplay(
-            DETAILS_SEGMENTID_CURRENT,
-            DETAILS_ATTRIBUTE_DAMAGE,
-            DETAILS_SUBATTRIBUTE_DAMAGETAKEN
-        )
-    end
-end
-
--- Always set display 1 to Current Damage Done
-if Details:GetInstance(1):IsStarted() then
-    Details:GetInstance(1):SetDisplay(
-        DETAILS_SEGMENTID_CURRENT,
-        DETAILS_ATTRIBUTE_DAMAGE,
-        DETAILS_SUBATTRIBUTE_DAMAGEDONE
-    )
-end
-```
-
-## Details On Enter Combat
-
-```lua
-LUI:TogglePanel(true)
-```
-
-## Details On Leave Combat
-
-```lua
-C_Timer.After(10, function()
-        if not LUI:InCombat() then
-            LUI:TogglePanel(false)
-        end
-end)
-```
+These tweaks are designed for the 1440p version of Retail AtrocityUI.
+**The 1080p and classic versions are not supported.**
