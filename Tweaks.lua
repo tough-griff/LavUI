@@ -374,13 +374,15 @@ function LUI:ApplyElvUITweaks()
         SetValue(profiles.elv.dps, "chat.panelHeight", config.elvUI.panelHeight)
         SetValue(profiles.elv.healer, "chat.panelHeight", config.elvUI.panelHeight)
 
-        -- this is here because we don't want to use 12 buttons unless
-        -- we are resizing the chat panels, too.
-        -- SetValue(profiles.elv.dps, "actionbar.bar3.buttons", 12)
-        -- SetValue(profiles.elv.healer, "actionbar.bar3.buttons", 12)
-        --
-        -- SetValue(profiles.elv.dps, "actionbar.bar3.buttonSize", 43)
-        -- SetValue(profiles.elv.healer, "actionbar.bar3.buttonSize", 43)
+        if not config.elvUI.actionbars then
+            -- this is here because we don't want to use 12 buttons unless
+            -- we are resizing the chat panels, too.
+            SetValue(profiles.elv.dps, "actionbar.bar3.buttons", 12)
+            SetValue(profiles.elv.healer, "actionbar.bar3.buttons", 12)
+
+            SetValue(profiles.elv.dps, "actionbar.bar3.buttonSize", 43)
+            SetValue(profiles.elv.healer, "actionbar.bar3.buttonSize", 43)
+        end
 
         SetValue(profiles.elv.dps, "actionbar.barPet.buttonSize", 43)
         SetValue(profiles.elv.healer, "actionbar.barPet.buttonSize", 43)

@@ -83,8 +83,8 @@ function LUI:GetOptions()
                             scaleEnabled = {
                                 order = 10,
                                 name = "Enable Scaling Fixes",
-                                desc = "Attempts to scale frames to the desired factor directly, without modifying " ..
-                                    "global scale settings.",
+                                desc = "Attempts to scale frames to the desired factor directly, " ..
+                                    "without modifying global scale settings.",
                                 type = "toggle",
                                 set = function(_, val) self.db.global.scaleEnabled = val end,
                                 get = function() return self.db.global.scaleEnabled end,
@@ -125,9 +125,9 @@ function LUI:GetOptions()
                             description = {
                                 type = "description",
                                 fontSize = "medium",
-                                name =
-                                    "These settings are only applied when you click the `Apply changes` button above." ..
-                                    " You'll need to re-apply these settings every time you update or install AtrocityUI."
+                                name = "These settings are only applied when you click the " ..
+                                    "`Apply changes` button above. You'll need to re-apply these " ..
+                                    "settings every time you update or install AtrocityUI."
                             }
                         }
                     },
@@ -139,8 +139,8 @@ function LUI:GetOptions()
                         args = {
                             unitFrames = {
                                 name = "Unit frame positions?",
-                                desc =
-                                "On ultra-wide resolutions the unit frames are positioned incorrectly. Should we fix them?",
+                                desc = "On ultra-wide resolutions the unit frames are positioned " ..
+                                    "incorrectly. Should we fix them?",
                                 type = "toggle",
                                 set = function(_, val) self.db.global.atrocityUI.elvUI.unitFrames = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.unitFrames end,
@@ -195,8 +195,9 @@ function LUI:GetOptions()
                         args = {
                             actionbars = {
                                 name = "Action bars?",
-                                desc =
-                                "Should we use a different action bar setup that is more compatible with the base UI and other action bar addons? This will probably require changing your keybindings as well.",
+                                desc = "Should we use a different action bar setup that is more " ..
+                                    "compatible with the base UI and other action bar addons? " ..
+                                    "This will require changing your keybindings as well.",
                                 type = "toggle",
                                 set = function(_, val) self.db.global.atrocityUI.elvUI.actionbars = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.actionbars end
@@ -317,6 +318,7 @@ function LUI:GetOptions()
                                 min = 6,
                                 max = 30,
                                 step = 1,
+                                disabled = function() return not self.db.global.atrocityUI.plater.fonts.resize end,
                                 set = function(_, val) self.db.global.atrocityUI.plater.fonts.size = val end,
                                 get = function() return self.db.global.atrocityUI.plater.fonts.size end,
                             },

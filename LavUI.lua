@@ -40,13 +40,16 @@ function LUI:ContainsIgnoreCase(val, search)
     return string.find(lowerVal, lowerSearch, 1, true) ~= nil
 end
 
+local actionBars = {
+    "bar1", "bar3", "bar4", "bar5", "bar6", "bar13", "bar14", "bar15", "barPet"
+}
+
 -- Bindings and helper functions --
 function LUI:ToggleBars()
     if not ElvUI then return end
     local E = unpack(ElvUI)
 
-    for _, n in pairs({ 1, 3, 4, 5, 6, 13, 14, 15 }) do
-        local bar = "bar" .. n
+    for _, bar in pairs(actionBars) do
         if E.db.actionbar[bar] then
             E.db.actionbar[bar].mouseover = not E.db.actionbar[bar].mouseover
             E.ActionBars:PositionAndSizeBar(bar)
@@ -75,18 +78,10 @@ function LUI:AddElvUITags()
     if not ElvUI then return end
     local E = unpack(ElvUI)
 
-    E:AddTag('classcolor:target', 'UNIT_TARGET', function(unit, ...)
-        local target = unit .. 'target'
-        if UnitExists(target) then
-            if UnitIsPlayer(target) or (E.Retail and UnitInPartyIsAI(target)) then
-                local _, classToken = UnitClass(target)
-                -- Check that this doesn't blow up with secrets
-                local cs = E.oUF.colors.class[classToken]
-                return cs and Hex(cs) or HEX_FALLBACK
-            else
-                local cr = E.oUF.colors.reaction[UnitReaction(target, 'player')]
-                return cr and Hex(cr) or HEX_FALLBACK
-            end
+    E:AddTag('classcolor:target', 'UNIT_TARGET', function(unit)
+        local unitTarget = unit .. 'target'
+        if UnitExists(unitTarget) then
+            return _TAGS.classcolor(unitTarget)
         end
     end)
 end
