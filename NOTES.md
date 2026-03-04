@@ -1,3 +1,5 @@
+# Details Auto Run Code
+
 ## Details On Enter Combat
 
 ```lua

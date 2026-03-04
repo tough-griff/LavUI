@@ -15,20 +15,6 @@ function LUI:InCombat()
     return InCombatLockdown() or UnitAffectingCombat('player') or UnitAffectingCombat('pet')
 end
 
----@param text string
----@param token string
----@return string[]
-function LUI:Split(text, token)
-    if token == nil then
-        token = "%s"
-    end
-    local t = {}
-    for str in string.gmatch(text, "([^" .. token .. "]+)") do
-        table.insert(t, str)
-    end
-    return t
-end
-
 ---@param val string
 ---@param starts string
 ---@return boolean

@@ -15,12 +15,16 @@ local profiles = {
     plater = {}
 }
 
+---@param dest table[]
+---@param path string
+---@param value any
 local function SetValue(dest, path, value)
     -- Do nothing if dest is nil
     if not dest then return end
 
-    local keys = LUI:Split(path, ".");
+    local keys = strsplittable(".", path);
 
+    -- For all entries in the `dest` table...
     for j, _ in pairs(dest) do
         -- Traverse the table up to the second-to-last key
         local current = dest[j]
@@ -210,7 +214,7 @@ local actionbarSettings = {
         ["buttonsPerRow"] = 2,
         ["mouseover"] = true,
         ["point"] = "TOPLEFT",
-        ["visibility"] = "[petbattle] hide; show",
+        ["visibility"] = "[petbattle] hide; [novehicleui,pet,nooverridebar,nopossessbar] show; hide",
     },
 }
 
@@ -653,6 +657,7 @@ function LUI:ApplyDetailsTweaks()
                 dtp.font_sizes = { menus = config.fonts.size }
             end
 
+            Details:ReopenAllWindows()
             for id, instance in Details:ListInstances() do
                 if config.fonts.resize then
                     instance:SetBarTextSettings(config.fonts.size)
@@ -672,12 +677,12 @@ function LUI:ApplyDetailsTweaks()
 
                     -- Healing window
                     if id == 2 then
-                        position.y = 125 -- TODO
+                        position.y = 125
                     end
 
                     -- Deaths window
                     if id == 3 then
-                        position.h = 99 -- TODO
+                        position.h = 99
                     end
 
                     instance:RestorePositionFromPositionTable(position)
@@ -692,7 +697,7 @@ function LUI:ApplyDetailsTweaks()
                 Details.tooltip.anchor_offset = { 0, -6 }
 
                 if config.elvUI.panels then
-                    Details.tooltip.anchor_screen_pos = { 1144, -710 } -- TODO
+                    Details.tooltip.anchor_screen_pos = { 1144, -710 }
                 end
             end
 

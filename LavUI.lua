@@ -4,7 +4,7 @@ local addon = select(2, ...)
 local LUI = LibStub("AceAddon-3.0"):NewAddon(addon, "LavUI", "AceHook-3.0")
 setglobal("LUI", LUI)
 
-local actionBars = {
+local ACTION_BARS = {
     "bar1", "bar3", "bar4", "bar5", "bar6", "bar13", "bar14", "bar15", "barPet"
 }
 
@@ -13,10 +13,16 @@ function LUI:ToggleBars()
     if not ElvUI then return end
     local E = unpack(ElvUI)
 
-    for _, bar in pairs(actionBars) do
+    local mouseover = E.db.actionbar.bar1.mouseover
+    for _, bar in pairs(ACTION_BARS) do
         if E.db.actionbar[bar] then
-            E.db.actionbar[bar].mouseover = not E.db.actionbar[bar].mouseover
-            E.ActionBars:PositionAndSizeBar(bar)
+            E.db.actionbar[bar].mouseover = not mouseover
+
+            if bar == "barPet" then
+                E.ActionBars:PositionAndSizeBarPet()
+            else
+                E.ActionBars:PositionAndSizeBar(bar)
+            end
         end
     end
 end
@@ -31,7 +37,7 @@ function LUI:TogglePanel(hide)
     local Panel = RightChatPanel
     if hide == true then
         Panel:Hide()
-        Details:ReabrirTodasInstancias()
+        Details:ReopenAllWindows()
     elseif hide == false then
         Panel:Show()
         Details:ShutDownAllInstances()
