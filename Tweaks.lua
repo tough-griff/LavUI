@@ -430,14 +430,14 @@ function LUI:ApplyElvUITweaks()
 
     if config.elvUI.minimap then
         -- Minimap
-        E.global.datatexts.customPanels.Clock.width = 265
+        E.global.datatexts.customPanels.Clock.width = 261
         E.global.datatexts.customPanels.Clock.textJustify = "CENTER"
 
-        SetValue(profiles.elv.dps, "general.minimap.scale", 1.25)
-        SetValue(profiles.elv.healer, "general.minimap.scale", 1.25)
+        SetValue(profiles.elv.dps, "general.minimap.scale", 1.24)
+        SetValue(profiles.elv.healer, "general.minimap.scale", 1.24)
 
-        SetValue(profiles.elv.dps, "general.minimap.size", 210)
-        SetValue(profiles.elv.healer, "general.minimap.size", 210)
+        SetValue(profiles.elv.dps, "general.minimap.size", 212)
+        SetValue(profiles.elv.healer, "general.minimap.size", 212)
     end
 
     if config.fonts.resize then
