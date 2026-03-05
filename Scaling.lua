@@ -12,6 +12,7 @@ function LUI:ScaleGuard(frame, scale, script)
         LUI:Debug("No frame found: " .. debugstack());
         return
     end
+
     if self:IsHooked(frame, "SetScale") then return end
 
     local guard
@@ -26,9 +27,15 @@ function LUI:ScaleGuard(frame, scale, script)
     end)
 
     if script and not self:IsHooked(frame, script) then
-        self:SecureHookScript(frame, script, function() frame:SetScale(scale) end)
+        self:SecureHookScript(frame, script, function()
+            if not LUI:InCombat() then
+                frame:SetScale(scale)
+            end
+        end)
     else
-        frame:SetScale(scale)
+        if not LUI:InCombat() then
+            frame:SetScale(scale)
+        end
     end
 end
 
