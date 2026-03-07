@@ -9,7 +9,7 @@ local RunOnAddonLoaded = EventUtil.ContinueOnAddOnLoaded
 ---@param script? ScriptFrame the script to hook onto
 function LUI:ScaleGuard(frame, scale, script)
     if not frame then
-        LUI:Debug("No frame found: " .. debugstack());
+        self:Debug("No frame found: " .. debugstack());
         return
     end
 
@@ -18,7 +18,7 @@ function LUI:ScaleGuard(frame, scale, script)
     local guard
     self:SecureHook(frame, "SetScale", function()
         -- Can't scale in combat or Blizzard will yell at us.
-        if not LUI:InCombat() then
+        if not self:InCombat() then
             if guard then return end
             guard = true
             frame:SetScale(scale)
@@ -28,12 +28,12 @@ function LUI:ScaleGuard(frame, scale, script)
 
     if script and not self:IsHooked(frame, script) then
         self:SecureHookScript(frame, script, function()
-            if not LUI:InCombat() then
+            if not self:InCombat() then
                 frame:SetScale(scale)
             end
         end)
     else
-        if not LUI:InCombat() then
+        if not self:InCombat() then
             frame:SetScale(scale)
         end
     end

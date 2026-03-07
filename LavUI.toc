@@ -6,6 +6,8 @@
 ## IconTexture: 626008
 ## OptionalDependencies: BigWigs, Details, ElvUI, Plater, WarpDeplete
 ## SavedVariables: LavUIDB
+## X-Curse-Project-ID: 1479503
+## X-Wago-ID: qKQmqkKx
 
 # Dependencies
 embeds.xml

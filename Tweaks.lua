@@ -49,10 +49,8 @@ function LUI:LoadProfiles()
     if ElvDB then
         local elvProfiles = ElvDB["profiles"]
         for p, _ in pairs(elvProfiles) do
-            local isAUI = LUI:StartsWithIgnoreCase(p, "atrocityui")
-            if isAUI then
-                local isHealer = LUI:ContainsIgnoreCase(p, "healer")
-                if isHealer then
+            if self:StartsWithIgnoreCase(p, "atrocityui") then
+                if self:ContainsIgnoreCase(p, "healer") then
                     table.insert(profiles.elv.healer, elvProfiles[p])
                 else
                     table.insert(profiles.elv.dps, elvProfiles[p])
@@ -65,10 +63,8 @@ function LUI:LoadProfiles()
     if ElvPrivateDB then
         local elvPrivateProfiles = ElvPrivateDB["profiles"]
         for p, _ in pairs(elvPrivateProfiles) do
-            local isAUI = LUI:StartsWithIgnoreCase(p, "atrocityui")
-            if isAUI then
-                local isHealer = LUI:ContainsIgnoreCase(p, "healer")
-                if isHealer then
+            if self:StartsWithIgnoreCase(p, "atrocityui") then
+                if self:ContainsIgnoreCase(p, "healer") then
                     table.insert(profiles.elvPrivate.healer, elvPrivateProfiles[p])
                 else
                     table.insert(profiles.elvPrivate.dps, elvPrivateProfiles[p])
@@ -81,8 +77,7 @@ function LUI:LoadProfiles()
     if BigWigs3DB then
         local bigWigsProfiles = BigWigs3DB["namespaces"]["BigWigs_Plugins_Bars"]["profiles"]
         for p, _ in pairs(bigWigsProfiles) do
-            local isAUI = LUI:StartsWithIgnoreCase(p, "atrocityui")
-            if isAUI then
+            if self:StartsWithIgnoreCase(p, "atrocityui") then
                 table.insert(profiles.bigWigs, bigWigsProfiles[p])
             end
         end
@@ -92,8 +87,7 @@ function LUI:LoadProfiles()
     if WarpDepleteDB then
         local warpDepleteProfiles = WarpDepleteDB["profiles"]
         for p, _ in pairs(warpDepleteProfiles) do
-            local isAUI = LUI:StartsWithIgnoreCase(p, "atrocityui")
-            if isAUI then
+            if self:StartsWithIgnoreCase(p, "atrocityui") then
                 table.insert(profiles.warpDeplete, warpDepleteProfiles[p])
             end
         end
@@ -103,14 +97,13 @@ function LUI:LoadProfiles()
     if Plater then
         local platerProfiles = Plater.db["profiles"]
         for p, _ in pairs(platerProfiles) do
-            local isAUI = LUI:StartsWithIgnoreCase(p, "atrocityui")
-            if isAUI then
+            if self:StartsWithIgnoreCase(p, "atrocityui") then
                 table.insert(profiles.plater, platerProfiles[p])
             end
         end
     end
 
-    LUI:Debug(profiles, "LoadProfiles")
+    self:Debug(profiles, "LoadProfiles")
 end
 
 local sharedBarSettings = {
@@ -509,6 +502,25 @@ function LUI:ApplyElvUITweaks()
     SetValue(profiles.elv.dps, "general.autoAcceptInvite", config.elvUI.autoAcceptInvites)
     SetValue(profiles.elv.healer, "general.autoAcceptInvite", config.elvUI.autoAcceptInvites)
 
+    -- Nicknames
+    if config.elvUI.nicknames then
+        SetValue(profiles.elv.dps, "unitframe.units.party.name.text_format", "[classcolor][NSNickName] [afk]")
+        SetValue(profiles.elv.healer, "unitframe.units.party.name.text_format", "[classcolor][NSNickName] [afk]")
+
+        SetValue(profiles.elv.dps, "unitframe.units.raid1.name.text_format", "[classcolor][NSNickName]")
+        SetValue(profiles.elv.healer, "unitframe.units.raid1.name.text_format", "[classcolor][NSNickName]")
+        SetValue(profiles.elv.dps, "unitframe.units.raid2.name.text_format", "[classcolor][NSNickName]")
+        SetValue(profiles.elv.healer, "unitframe.units.raid2.name.text_format", "[classcolor][NSNickName]")
+        SetValue(profiles.elv.dps, "unitframe.units.raid3.name.text_format", "[classcolor][NSNickName]")
+        SetValue(profiles.elv.healer, "unitframe.units.raid3.name.text_format", "[classcolor][NSNickName]")
+    end
+
+    -- Actionbar Overhaul
+    if config.elvUI.actionbars then
+        ApplyElvUIBarTweaks(profiles.elv.dps)
+        ApplyElvUIBarTweaks(profiles.elv.healer)
+    end
+
     -- Movers
     if config.elvUI.minimap then
         SetValue(profiles.elv.dps, "movers.BNETMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-3,-290")
@@ -526,6 +538,9 @@ function LUI:ApplyElvUITweaks()
         SetValue(profiles.elv.dps, "movers.QueueStatusMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-8,-210")
         SetValue(profiles.elv.healer, "movers.QueueStatusMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-8,-210")
     end
+
+    SetValue(profiles.elv.dps, "movers.WTMinimapButtonBarAnchor", "BOTTOMLEFT,Minimap,BOTTOMLEFT,3,3")
+    SetValue(profiles.elv.healer, "movers.WTMinimapButtonBarAnchor", "BOTTOMLEFT,Minimap,BOTTOMLEFT,3,3")
 
     if config.elvUI.panels then
         local PetAB = format("BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,%d,3", -config.elvUI.panelWidth - 4)
@@ -583,24 +598,6 @@ function LUI:ApplyElvUITweaks()
         SetValue(profiles.elv.dps, "ElvUI_Anchor.focusY", 37)
         SetValue(profiles.elv.healer, "ElvUI_Anchor.focusY", 37)
     end
-
-    -- Nicknames
-    if config.elvUI.nicknames then
-        SetValue(profiles.elv.dps, "unitframe.units.party.name.text_format", "[classcolor][NSNickName] [afk]")
-        SetValue(profiles.elv.healer, "unitframe.units.party.name.text_format", "[classcolor][NSNickName] [afk]")
-
-        SetValue(profiles.elv.dps, "unitframe.units.raid1.name.text_format", "[classcolor][NSNickName]")
-        SetValue(profiles.elv.healer, "unitframe.units.raid1.name.text_format", "[classcolor][NSNickName]")
-        SetValue(profiles.elv.dps, "unitframe.units.raid2.name.text_format", "[classcolor][NSNickName]")
-        SetValue(profiles.elv.healer, "unitframe.units.raid2.name.text_format", "[classcolor][NSNickName]")
-        SetValue(profiles.elv.dps, "unitframe.units.raid3.name.text_format", "[classcolor][NSNickName]")
-        SetValue(profiles.elv.healer, "unitframe.units.raid3.name.text_format", "[classcolor][NSNickName]")
-    end
-
-    if config.elvUI.actionbars then
-        ApplyElvUIBarTweaks(profiles.elv.dps)
-        ApplyElvUIBarTweaks(profiles.elv.healer)
-    end
 end
 
 function LUI:ApplyBigWigsTweaks()
@@ -640,8 +637,7 @@ function LUI:ApplyDetailsTweaks()
     -- We don't do the normal SetValue stuff for Details, because if you modify *some* profile values (like tooltip)
     -- without using the global "Details" table, the settings are not persisted.
     for _, profile in ipairs(Details:GetProfileList()) do
-        local isAUI = LUI:StartsWithIgnoreCase(profile, "atrocityui")
-        if isAUI then
+        if self:StartsWithIgnoreCase(profile, "atrocityui") then
             local dtp = Details:GetProfile(profile)
 
             -- Apply the profile first, so that references to Details below will resolve the correct profile.
