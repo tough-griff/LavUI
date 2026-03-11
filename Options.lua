@@ -33,10 +33,9 @@ function LUI:GetDefaults()
                 plater = {
                     fonts = {
                         resize = false,
-                        size = 8,
+                        size = 14,
                     },
                     friendly = false,
-                    globalScale = 1,
                 },
             },
         }
@@ -331,18 +330,6 @@ function LUI:GetOptions()
                                 type = "toggle",
                                 set = function(_, val) self.db.global.atrocityUI.plater.friendly = val end,
                                 get = function() return self.db.global.atrocityUI.plater.friendly end,
-                            },
-                            globalScale = {
-                                order = 30,
-                                name = "Global Scale",
-                                desc = "Should we apply a custom scale to Plater frames?",
-                                type = "range",
-                                min = 1.00,
-                                max = 2.00,
-                                step = 0.01,
-                                isPercent = true,
-                                set = function(_, val) self.db.global.atrocityUI.plater.globalScale = val end,
-                                get = function() return self.db.global.atrocityUI.plater.globalScale end,
                             },
                         },
                     },

@@ -752,8 +752,6 @@ function LUI:ApplyPlaterTweaks()
         })
     end
 
-    SetValue(profiles.plater, "saved_cvars.nameplateGlobalScale", config.plater.globalScale)
-
     Plater.RefreshDBUpvalues()
     Plater.UpdateAllPlates()
     Plater.RefreshAutoToggle()
@@ -791,6 +789,7 @@ function LUI:ApplyTweaks()
     self:ApplyElvUITweaks()
     self:ApplyBigWigsTweaks()
     self:ApplyDetailsTweaks()
+    self:ApplyPlaterTweaks()
     self:ApplyWarpDepleteTweaks()
 
     ReloadUI()
