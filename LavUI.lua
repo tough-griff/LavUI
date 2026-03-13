@@ -75,6 +75,7 @@ end
 
 function LUI:OnEnable()
     self:ApplyScaling()
+    self:ApplyACDMTweaks()
     self:AddElvUITags()
 end
 

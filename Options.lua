@@ -37,6 +37,9 @@ function LUI:GetDefaults()
                     },
                     friendly = false,
                 },
+                acdm = {
+                    hideWhenZero = false,
+                },
             },
         }
     }
@@ -333,6 +336,21 @@ function LUI:GetOptions()
                             },
                         },
                     },
+                    acdm = {
+                        order = 50,
+                        type = "group",
+                        name = "Ayije CDM Tweaks",
+                        inline = true,
+                        args = {
+                            hideWhenZero = {
+                                name = "Hide when zero?",
+                                desc = "Should we hide the CDM power text when zero? Prevents OLED burnin",
+                                type = "toggle",
+                                set = function(_, val) self.db.global.atrocityUI.acdm.hideWhenZero = val end,
+                                get = function() return self.db.global.atrocityUI.acdm.hideWhenZero end,
+                            }
+                        }
+                    }
                 },
             },
         },

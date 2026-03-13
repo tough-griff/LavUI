@@ -106,6 +106,24 @@ function LUI:LoadProfiles()
     self:Debug(profiles, "LoadProfiles")
 end
 
+--- Hide the text of CDM bars when the value is zero.
+function LUI:ApplyACDMTweaks()
+    if not Ayije_CDM or not Ayije_CDM.TAGS then return end
+
+    local config = LUI.db.global.atrocityUI
+
+    if config.acdm.hideWhenZero then
+        self:Hook(Ayije_CDM.TAGS, "UpdateTagText", function(_, textFrame)
+            if not textFrame or not textFrame.text or self:IsHooked(textFrame.text, "SetFormattedText") then return end
+            self:SecureHook(textFrame.text, "SetFormattedText", function(_, text, value)
+                if text == "%d" then
+                    textFrame.text:SetText(C_StringUtil.TruncateWhenZero(value))
+                end
+            end)
+        end)
+    end
+end
+
 local sharedBarSettings = {
     ["countFont"] = "Expressway",
     ["countFontOutline"] = "OUTLINE",
