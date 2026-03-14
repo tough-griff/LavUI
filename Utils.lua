@@ -1,4 +1,4 @@
---- @class LUI
+---@class LUI
 local LUI = select(2, ...)
 
 --- Log data to DevTool if it's available. Useful for debugging without spamming

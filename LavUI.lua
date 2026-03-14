@@ -1,6 +1,6 @@
 local addon = select(2, ...)
 
---- @class LUI: AceAddon, AceHook-3.0
+---@class LUI: AceAddon, AceHook-3.0
 local LUI = LibStub("AceAddon-3.0"):NewAddon(addon, "LavUI", "AceHook-3.0")
 setglobal("LUI", LUI)
 
@@ -33,7 +33,7 @@ end
 function LUI:TogglePanel(hide)
     if not Details or not RightChatPanel then return end
 
-    ---@class Frame
+    ---@type Frame
     local Panel = RightChatPanel
     if hide == true then
         Panel:Hide()

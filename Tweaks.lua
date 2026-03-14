@@ -1,4 +1,4 @@
---- @class LUI
+---@class LUI
 local LUI = select(2, ...)
 
 local profiles = {

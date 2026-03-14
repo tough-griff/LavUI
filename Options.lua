@@ -1,8 +1,8 @@
---- @class LUI
+---@class LUI
 local LUI = select(2, ...)
 
 function LUI:GetDefaults()
-    --- @type AceDB.Schema
+    ---@type AceDB.Schema
     return {
         global = {
             scaleEnabled = false,
@@ -46,7 +46,7 @@ function LUI:GetDefaults()
 end
 
 function LUI:GetOptions()
-    --- @type AceConfig.OptionsTable
+    ---@type AceConfig.OptionsTable
     return {
         name = format("|cffffccff%s|r v%s", "LavUI", C_AddOns.GetAddOnMetadata("LavUI", "Version")),
         type = "group",
