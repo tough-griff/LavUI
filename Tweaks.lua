@@ -1,5 +1,7 @@
 ---@class LUI
 local LUI = select(2, ...)
+---@class Tweaks: AceModule, AceHook-3.0
+local Tweaks = LUI:NewModule("Tweaks", "AceHook-3.0")
 
 local profiles = {
     elv = {
@@ -44,13 +46,13 @@ local function SetValue(dest, path, value)
     end
 end
 
-function LUI:LoadProfiles()
+function Tweaks:LoadProfiles()
     -- ElvUI Base
     if ElvDB then
         local elvProfiles = ElvDB["profiles"]
         for p, _ in pairs(elvProfiles) do
-            if self:StartsWithIgnoreCase(p, "atrocityui") then
-                if self:ContainsIgnoreCase(p, "healer") then
+            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
+                if LUI:ContainsIgnoreCase(p, "healer") then
                     table.insert(profiles.elv.healer, elvProfiles[p])
                 else
                     table.insert(profiles.elv.dps, elvProfiles[p])
@@ -63,8 +65,8 @@ function LUI:LoadProfiles()
     if ElvPrivateDB then
         local elvPrivateProfiles = ElvPrivateDB["profiles"]
         for p, _ in pairs(elvPrivateProfiles) do
-            if self:StartsWithIgnoreCase(p, "atrocityui") then
-                if self:ContainsIgnoreCase(p, "healer") then
+            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
+                if LUI:ContainsIgnoreCase(p, "healer") then
                     table.insert(profiles.elvPrivate.healer, elvPrivateProfiles[p])
                 else
                     table.insert(profiles.elvPrivate.dps, elvPrivateProfiles[p])
@@ -77,7 +79,7 @@ function LUI:LoadProfiles()
     if BigWigs3DB then
         local bigWigsProfiles = BigWigs3DB["namespaces"]["BigWigs_Plugins_Bars"]["profiles"]
         for p, _ in pairs(bigWigsProfiles) do
-            if self:StartsWithIgnoreCase(p, "atrocityui") then
+            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
                 table.insert(profiles.bigWigs, bigWigsProfiles[p])
             end
         end
@@ -87,7 +89,7 @@ function LUI:LoadProfiles()
     if WarpDepleteDB then
         local warpDepleteProfiles = WarpDepleteDB["profiles"]
         for p, _ in pairs(warpDepleteProfiles) do
-            if self:StartsWithIgnoreCase(p, "atrocityui") then
+            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
                 table.insert(profiles.warpDeplete, warpDepleteProfiles[p])
             end
         end
@@ -97,17 +99,17 @@ function LUI:LoadProfiles()
     if Plater then
         local platerProfiles = Plater.db["profiles"]
         for p, _ in pairs(platerProfiles) do
-            if self:StartsWithIgnoreCase(p, "atrocityui") then
+            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
                 table.insert(profiles.plater, platerProfiles[p])
             end
         end
     end
 
-    self:Debug(profiles, "LoadProfiles")
+    LUI:Debug(profiles, "LoadProfiles")
 end
 
 --- Hide the text of CDM bars when the value is zero.
-function LUI:ApplyACDMTweaks()
+function Tweaks:HookACDM()
     if not Ayije_CDM or not Ayije_CDM.TAGS then return end
 
     local config = LUI.db.global.atrocityUI
@@ -122,6 +124,20 @@ function LUI:ApplyACDMTweaks()
             end)
         end)
     end
+end
+
+--- Add the 'classcolor:target' tag to ElvUI since they removed it but it still
+--- seems to function just fine.
+function Tweaks:AddElvUITags()
+    if not ElvUI then return end
+    local E = unpack(ElvUI)
+
+    E:AddTag('classcolor:target', 'UNIT_TARGET', function(unit)
+        local unitTarget = unit .. 'target'
+        if UnitExists(unitTarget) then
+            return _TAGS.classcolor(unitTarget)
+        end
+    end)
 end
 
 local sharedBarSettings = {
@@ -267,13 +283,13 @@ function ApplyElvUIBarTweaks(profile)
     SetValue(profile, "movers.PetAB", format("BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-%d,3", panelOffset))
 end
 
-function LUI:ApplyElvUITweaks()
+function Tweaks:ApplyElvUITweaks()
     if not ElvUI then return end
 
-    local config = self.db.global.atrocityUI
+    local config = LUI.db.global.atrocityUI
 
     local E = unpack(ElvUI)
-    local descaledFontSize = math.floor(config.fonts.size - (config.fonts.size * (self.db.global.scaleFactor - 1)))
+    local descaledFontSize = math.floor(config.fonts.size - (config.fonts.size * (LUI.db.global.scaleFactor - 1)))
     local diminishedFontSize = math.ceil((config.fonts.size - descaledFontSize) / 2) + config.fonts.size
 
     if config.fonts.resize then
@@ -618,10 +634,10 @@ function LUI:ApplyElvUITweaks()
     end
 end
 
-function LUI:ApplyBigWigsTweaks()
+function Tweaks:ApplyBigWigsTweaks()
     if not BigWigs3DB then return end
 
-    local config = self.db.global.atrocityUI
+    local config = LUI.db.global.atrocityUI
 
     if config.fonts.resize then
         SetValue(profiles.bigWigs, "fontSize", config.fonts.size)
@@ -647,22 +663,22 @@ function LUI:ApplyBigWigsTweaks()
     end
 end
 
-function LUI:ApplyDetailsTweaks()
+function Tweaks:ApplyDetailsTweaks()
     if not Details then return end
 
-    local config = self.db.global.atrocityUI
+    local config = LUI.db.global.atrocityUI
 
     -- We don't do the normal SetValue stuff for Details, because if you modify *some* profile values (like tooltip)
     -- without using the global "Details" table, the settings are not persisted.
     for _, profile in ipairs(Details:GetProfileList()) do
-        if self:StartsWithIgnoreCase(profile, "atrocityui") then
+        if LUI:StartsWithIgnoreCase(profile, "atrocityui") then
             local dtp = Details:GetProfile(profile)
 
             -- Apply the profile first, so that references to Details below will resolve the correct profile.
             Details:ApplyProfile(profile)
 
-            if self.db.global.scaleFactor then
-                dtp.options_window = { scale = self.db.global.scaleFactor }
+            if LUI.db.global.scaleFactor then
+                dtp.options_window = { scale = LUI.db.global.scaleFactor }
             end
 
             if config.fonts.resize then
@@ -720,10 +736,10 @@ function LUI:ApplyDetailsTweaks()
     end
 end
 
-function LUI:ApplyPlaterTweaks()
+function Tweaks:ApplyPlaterTweaks()
     if not Plater then return end
 
-    local config = self.db.global.atrocityUI
+    local config = LUI.db.global.atrocityUI
 
     if config.plater.fonts.resize then
         SetValue(profiles.plater, "plate_config.enemynpc.actorname_text_size", config.plater.fonts.size)
@@ -775,13 +791,13 @@ function LUI:ApplyPlaterTweaks()
     Plater.RefreshAutoToggle()
 end
 
-function LUI:ApplyWarpDepleteTweaks()
+function Tweaks:ApplyWarpDepleteTweaks()
     if not WarpDepleteDB then return end
 
-    local config = self.db.global.atrocityUI
+    local config = LUI.db.global.atrocityUI
 
-    if self.db.global.scaleFactor then
-        SetValue(profiles.warpDeplete, "frameScale", self.db.global.scaleFactor)
+    if LUI.db.global.scaleFactor then
+        SetValue(profiles.warpDeplete, "frameScale", LUI.db.global.scaleFactor)
     end
 
     if config.fonts.resize then
@@ -801,7 +817,7 @@ function LUI:ApplyWarpDepleteTweaks()
     end
 end
 
-function LUI:ApplyTweaks()
+function Tweaks:ApplyTweaks()
     self:LoadProfiles()
 
     self:ApplyElvUITweaks()
@@ -811,4 +827,17 @@ function LUI:ApplyTweaks()
     self:ApplyWarpDepleteTweaks()
 
     ReloadUI()
+end
+
+function Tweaks:OnInitialize()
+    self:LoadProfiles()
+end
+
+function Tweaks:OnEnable()
+    self:HookACDM()
+    self:AddElvUITags()
+end
+
+function Tweaks:OnDisable()
+    self:UnhookAll()
 end

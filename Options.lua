@@ -46,6 +46,11 @@ function LUI:GetDefaults()
 end
 
 function LUI:GetOptions()
+    ---@class Scaling
+    local Scaling = self:GetModule("Scaling")
+    ---@class Tweaks
+    local Tweaks = self:GetModule("Tweaks")
+
     ---@type AceConfig.OptionsTable
     return {
         name = format("|cffffccff%s|r v%s", "LavUI", C_AddOns.GetAddOnMetadata("LavUI", "Version")),
@@ -58,7 +63,7 @@ function LUI:GetOptions()
                 name = "Apply changes",
                 desc = "To apply changes, you might need to reload your UI.",
                 type = "execute",
-                func = function() return self:ApplyTweaks() end,
+                func = function() return Tweaks:ApplyTweaks() end,
             },
             reset = {
                 order = 1001,
@@ -69,11 +74,18 @@ function LUI:GetOptions()
                 confirmText = "Reset your configuration and reload UI?",
                 func = function()
                     self.db:ResetDB(DEFAULT)
-                    return self:ApplyTweaks()
+                    return Tweaks:ApplyTweaks()
                 end,
             },
+            keybindings = {
+                order = 1002,
+                name = "Keybindings",
+                desc = "Open the keybinding menu.",
+                type = "execute",
+                func = function() return Settings.OpenToCategory(39, BINDING_HEADER_LUI) end,
+            },
             general = {
-                order = 1,
+                order = 100,
                 name = "General Tweaks",
                 type = "group",
                 args = {
@@ -89,8 +101,11 @@ function LUI:GetOptions()
                                 desc = "Attempts to scale frames to the desired factor directly, " ..
                                     "without modifying global scale settings.",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.scaleEnabled = val end,
                                 get = function() return self.db.global.scaleEnabled end,
+                                set = function(_, val)
+                                    self.db.global.scaleEnabled = val
+                                    if val then Scaling:Enable() else Scaling:Disable() end
+                                end,
                             },
                             scaleFactor = {
                                 order = 20,
@@ -102,14 +117,16 @@ function LUI:GetOptions()
                                 step = 0.01,
                                 isPercent = true,
                                 disabled = function() return not self.db.global.scaleEnabled end,
-                                set = function(_, val) self.db.global.scaleFactor = val end,
                                 get = function() return self.db.global.scaleFactor end,
+                                set = function(_, val) self.db.global.scaleFactor = val end,
+
                             },
                             reminder = {
                                 order = 30,
                                 type = "description",
                                 fontSize = "medium",
                                 name = "You need to reload your UI after changing this.\n",
+                                width = "full"
                             },
                         },
                     },
@@ -146,22 +163,22 @@ function LUI:GetOptions()
                                 desc = "On ultra-wide resolutions the unit frames are positioned " ..
                                     "incorrectly. Should we fix them?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.unitFrames = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.unitFrames end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.unitFrames = val end,
                             },
                             bigWigs = {
                                 name = "BigWigs Bars?",
                                 desc = "Re-position BigWigs bars for ultra-wide, and set max bars shown to 5.",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.bigWigs = val end,
                                 get = function() return self.db.global.atrocityUI.bigWigs end,
+                                set = function(_, val) self.db.global.atrocityUI.bigWigs = val end,
                             },
                             details = {
                                 name = "Details Tweaks?",
                                 desc = "Fixes the details tooltip anchor for ultra-wide.",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.details = val end,
                                 get = function() return self.db.global.atrocityUI.details end,
+                                set = function(_, val) self.db.global.atrocityUI.details = val end,
                             },
                         },
                     },
@@ -175,8 +192,8 @@ function LUI:GetOptions()
                                 name = "Change font size?",
                                 desc = "Should we change the general UI font size?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.fonts.resize = val end,
                                 get = function() return self.db.global.atrocityUI.fonts.resize end,
+                                set = function(_, val) self.db.global.atrocityUI.fonts.resize = val end,
                             },
                             size = {
                                 name = "Desired font size",
@@ -186,8 +203,8 @@ function LUI:GetOptions()
                                 max = 30,
                                 step = 1,
                                 disabled = function() return not self.db.global.atrocityUI.fonts.resize end,
-                                set = function(_, val) self.db.global.atrocityUI.fonts.size = val end,
                                 get = function() return self.db.global.atrocityUI.fonts.size end,
+                                set = function(_, val) self.db.global.atrocityUI.fonts.size = val end,
                             },
                         },
                     },
@@ -205,22 +222,22 @@ function LUI:GetOptions()
                                 type = "toggle",
                                 confirm = true,
                                 confirmText = "This will change your action bar layout dramatically. Are you sure?",
+                                get = function() return self.db.global.atrocityUI.elvUI.actionbars end,
                                 set = function(_, val) self.db.global.atrocityUI.elvUI.actionbars = val end,
-                                get = function() return self.db.global.atrocityUI.elvUI.actionbars end
                             },
                             databars = {
                                 name = "Data bars?",
                                 desc = "Should we increase the size of the experience bar when shown?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.databars = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.databars end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.databars = val end,
                             },
                             disableBags = {
                                 name = "Disable bags?",
                                 desc = "Should ElvUI bags be disabled? I use Baganator instead.",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.disableBags = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.disableBags end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.disableBags = val end,
                             },
                             panels = {
                                 name = "Chat Panels",
@@ -231,8 +248,8 @@ function LUI:GetOptions()
                                         name = "Bigger chat panels?",
                                         desc = "Should we increase the size of the chat and damage meter panels?",
                                         type = "toggle",
-                                        set = function(_, val) self.db.global.atrocityUI.elvUI.panels = val end,
                                         get = function() return self.db.global.atrocityUI.elvUI.panels end,
+                                        set = function(_, val) self.db.global.atrocityUI.elvUI.panels = val end,
                                     },
                                     panelWidth = {
                                         name = "Chat panel width",
@@ -242,8 +259,8 @@ function LUI:GetOptions()
                                         max = 800,
                                         step = 1,
                                         disabled = function() return not self.db.global.atrocityUI.elvUI.panels end,
-                                        set = function(_, val) self.db.global.atrocityUI.elvUI.panelWidth = val end,
                                         get = function() return self.db.global.atrocityUI.elvUI.panelWidth end,
+                                        set = function(_, val) self.db.global.atrocityUI.elvUI.panelWidth = val end,
                                     },
                                     panelHeight = {
                                         name = "Chat panel height",
@@ -253,15 +270,15 @@ function LUI:GetOptions()
                                         max = 300,
                                         step = 1,
                                         disabled = function() return not self.db.global.atrocityUI.elvUI.panels end,
-                                        set = function(_, val) self.db.global.atrocityUI.elvUI.panelHeight = val end,
                                         get = function() return self.db.global.atrocityUI.elvUI.panelHeight end,
+                                        set = function(_, val) self.db.global.atrocityUI.elvUI.panelHeight = val end,
                                     },
                                     panelBackdrop = {
                                         name = "Disable backdrop?",
                                         desc = "Should we disable the backdrop on chat panels?",
                                         type = "toggle",
-                                        set = function(_, val) self.db.global.atrocityUI.elvUI.panelBackdrop = val end,
                                         get = function() return self.db.global.atrocityUI.elvUI.panelBackdrop end,
+                                        set = function(_, val) self.db.global.atrocityUI.elvUI.panelBackdrop = val end,
                                     },
                                 },
                             },
@@ -269,43 +286,43 @@ function LUI:GetOptions()
                                 name = "Bigger minimap?",
                                 desc = "Should we make the minimap bigger?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.minimap = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.minimap end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.minimap = val end,
                             },
                             minimapDataTexts = {
                                 name = "Minimap datatexts?",
                                 desc = "Should we enable the datatexts under the minimap?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.minimapDataTexts = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.minimapDataTexts end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.minimapDataTexts = val end,
                             },
                             tooltip = {
                                 name = "Tooltip tweaks?",
                                 desc = "Should we disable item count and set the modifier key to SHIFT?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.tooltip = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.tooltip end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.tooltip = val end,
                             },
                             guildRepairs = {
                                 name = "Use guild repairs?",
                                 desc = "Should we auto-repair with guild funds?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.guildRepairs = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.guildRepairs end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.guildRepairs = val end,
                             },
                             autoAcceptInvites = {
                                 name = "Auto accept invites?",
                                 desc = "Should we automatically accept group invites from guild mates and friends?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.autoAcceptInvites = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.autoAcceptInvites end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.autoAcceptInvites = val end,
                             },
                             nicknames = {
                                 name = "Use nicknames?",
                                 desc = "Should we use nicknames on unit frames?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.nicknames = val end,
                                 get = function() return self.db.global.atrocityUI.elvUI.nicknames end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.nicknames = val end,
                             }
                         },
                     },
@@ -320,8 +337,8 @@ function LUI:GetOptions()
                                 name = "Change font size?",
                                 desc = "Should we change font size for Plater nameplates?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.plater.fonts.resize = val end,
                                 get = function() return self.db.global.atrocityUI.plater.fonts.resize end,
+                                set = function(_, val) self.db.global.atrocityUI.plater.fonts.resize = val end,
                             },
                             size = {
                                 order = 10,
@@ -332,16 +349,16 @@ function LUI:GetOptions()
                                 max = 30,
                                 step = 1,
                                 disabled = function() return not self.db.global.atrocityUI.plater.fonts.resize end,
-                                set = function(_, val) self.db.global.atrocityUI.plater.fonts.size = val end,
                                 get = function() return self.db.global.atrocityUI.plater.fonts.size end,
+                                set = function(_, val) self.db.global.atrocityUI.plater.fonts.size = val end,
                             },
                             friendly = {
                                 order = 20,
                                 name = "Friendly plates?",
                                 desc = "Should we auto-enable friendly nameplates in dungeons and raids?",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.plater.friendly = val end,
                                 get = function() return self.db.global.atrocityUI.plater.friendly end,
+                                set = function(_, val) self.db.global.atrocityUI.plater.friendly = val end,
                             },
                         },
                     },
@@ -355,8 +372,8 @@ function LUI:GetOptions()
                                 name = "Hide when zero?",
                                 desc = "Should we hide the CDM power text when zero? Prevents OLED burnin",
                                 type = "toggle",
-                                set = function(_, val) self.db.global.atrocityUI.acdm.hideWhenZero = val end,
                                 get = function() return self.db.global.atrocityUI.acdm.hideWhenZero end,
+                                set = function(_, val) self.db.global.atrocityUI.acdm.hideWhenZero = val end,
                             }
                         }
                     }

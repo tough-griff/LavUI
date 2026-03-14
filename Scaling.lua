@@ -1,5 +1,7 @@
 ---@class LUI
 local LUI = select(2, ...)
+---@class Scaling: AceModule, AceHook-3.0
+local Scaling = LUI:NewModule("Scaling", "AceHook-3.0")
 
 local RunOnAddonLoaded = EventUtil.ContinueOnAddOnLoaded
 
@@ -7,18 +9,18 @@ local RunOnAddonLoaded = EventUtil.ContinueOnAddOnLoaded
 ---@param frame Frame the frame to scale
 ---@param scale number the desired scale factor
 ---@param script? ScriptFrame the script to hook onto
-function LUI:ScaleGuard(frame, scale, script)
+function Scaling:ScaleGuard(frame, scale, script)
     if not frame then
-        self:Debug("No frame found: " .. debugstack());
+        LUI:Debug("No frame found: " .. debugstack());
         return
     end
 
-    if self:IsHooked(frame, "SetScale") then return end
+    if LUI:IsHooked(frame, "SetScale") then return end
 
     local guard
     self:SecureHook(frame, "SetScale", function()
         -- Can't scale in combat or Blizzard will yell at us.
-        if not self:InCombat() then
+        if not LUI:InCombat() then
             if guard then return end
             guard = true
             frame:SetScale(scale)
@@ -28,22 +30,26 @@ function LUI:ScaleGuard(frame, scale, script)
 
     if script and not self:IsHooked(frame, script) then
         self:SecureHookScript(frame, script, function()
-            if not self:InCombat() then
+            if not LUI:InCombat() then
                 frame:SetScale(scale)
             end
         end)
     else
-        if not self:InCombat() then
+        if not LUI:InCombat() then
             frame:SetScale(scale)
         end
     end
 end
 
----Apply scaling to all frames.
-function LUI:ApplyScaling()
-    if not self.db.global.scaleEnabled then return end
+function Scaling:OnInitialize()
+    self:SetEnabledState(LUI.db.global.scaleEnabled)
+end
 
-    local scale = self.db.global.scaleFactor
+---Apply scaling to all frames.
+function Scaling:OnEnable()
+    if not LUI.db.global.scaleEnabled then return end
+
+    local scale = LUI.db.global.scaleFactor
     local globalScale = UIParent:GetEffectiveScale()
     local scaledScreenWidth = GetScreenWidth() * globalScale
 
@@ -220,4 +226,8 @@ function LUI:ApplyScaling()
 
     -- Addon Frames
     self:ScaleGuard(ElvLootFrame, scale)
+end
+
+function Scaling:OnDisable()
+    self:UnhookAll()
 end
