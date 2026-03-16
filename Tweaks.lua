@@ -17,19 +17,21 @@ local profiles = {
     plater = {}
 }
 
----@param dest table[]
+--- Set the value nested at `path` on all tables in the `destinations` array.
+--- The `path` is a string of keys separated by dots, e.g `"actionbar.bar1.buttonSize"`.
+---@param destinations table[]
 ---@param path string
 ---@param value any
-local function SetValue(dest, path, value)
+local function SetValue(destinations, path, value)
     -- Do nothing if dest is nil
-    if not dest then return end
+    if not destinations then return end
 
     local keys = strsplittable(".", path);
 
-    -- For all entries in the `dest` table...
-    for j, _ in pairs(dest) do
+    -- For all entries in the `destinations` table
+    for _, tbl in pairs(destinations) do
         -- Traverse the table up to the second-to-last key
-        local current = dest[j]
+        local current = tbl
         for i = 1, #keys - 1 do
             local key = keys[i]
             key = tonumber(key) or key
@@ -49,13 +51,12 @@ end
 function Tweaks:LoadProfiles()
     -- ElvUI Base
     if ElvDB then
-        local elvProfiles = ElvDB["profiles"]
-        for p, _ in pairs(elvProfiles) do
-            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
-                if LUI:ContainsIgnoreCase(p, "healer") then
-                    table.insert(profiles.elv.healer, elvProfiles[p])
+        for k, v in pairs(ElvDB["profiles"]) do
+            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
+                if LUI:ContainsIgnoreCase(k, "healer") then
+                    table.insert(profiles.elv.healer, v)
                 else
-                    table.insert(profiles.elv.dps, elvProfiles[p])
+                    table.insert(profiles.elv.dps, v)
                 end
             end
         end
@@ -63,13 +64,12 @@ function Tweaks:LoadProfiles()
 
     -- ElvUI Private
     if ElvPrivateDB then
-        local elvPrivateProfiles = ElvPrivateDB["profiles"]
-        for p, _ in pairs(elvPrivateProfiles) do
-            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
-                if LUI:ContainsIgnoreCase(p, "healer") then
-                    table.insert(profiles.elvPrivate.healer, elvPrivateProfiles[p])
+        for k, v in pairs(ElvPrivateDB["profiles"]) do
+            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
+                if LUI:ContainsIgnoreCase(k, "healer") then
+                    table.insert(profiles.elvPrivate.healer, v)
                 else
-                    table.insert(profiles.elvPrivate.dps, elvPrivateProfiles[p])
+                    table.insert(profiles.elvPrivate.dps, v)
                 end
             end
         end
@@ -77,30 +77,27 @@ function Tweaks:LoadProfiles()
 
     -- BigWigs
     if BigWigs3DB then
-        local bigWigsProfiles = BigWigs3DB["namespaces"]["BigWigs_Plugins_Bars"]["profiles"]
-        for p, _ in pairs(bigWigsProfiles) do
-            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
-                table.insert(profiles.bigWigs, bigWigsProfiles[p])
+        for k, v in pairs(BigWigs3DB["namespaces"]["BigWigs_Plugins_Bars"]["profiles"]) do
+            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
+                table.insert(profiles.bigWigs, v)
             end
         end
     end
 
     -- WarpDeplete
     if WarpDepleteDB then
-        local warpDepleteProfiles = WarpDepleteDB["profiles"]
-        for p, _ in pairs(warpDepleteProfiles) do
-            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
-                table.insert(profiles.warpDeplete, warpDepleteProfiles[p])
+        for k, v in pairs(WarpDepleteDB["profiles"]) do
+            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
+                table.insert(profiles.warpDeplete, v)
             end
         end
     end
 
     -- Plater
     if Plater then
-        local platerProfiles = Plater.db["profiles"]
-        for p, _ in pairs(platerProfiles) do
-            if LUI:StartsWithIgnoreCase(p, "atrocityui") then
-                table.insert(profiles.plater, platerProfiles[p])
+        for k, v in pairs(Plater.db["profiles"]) do
+            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
+                table.insert(profiles.plater, v)
             end
         end
     end
@@ -126,21 +123,21 @@ function Tweaks:HookACDM()
     end
 end
 
---- Add the 'classcolor:target' tag to ElvUI since they removed it but it still
+--- Add the "classcolor:target" tag to ElvUI since they removed it but it still
 --- seems to function just fine.
 function Tweaks:AddElvUITags()
     if not ElvUI then return end
     local E = unpack(ElvUI)
 
-    E:AddTag('classcolor:target', 'UNIT_TARGET', function(unit)
-        local unitTarget = unit .. 'target'
+    E:AddTag("classcolor:target", "UNIT_TARGET", function(unit)
+        local unitTarget = unit .. "target"
         if UnitExists(unitTarget) then
             return _TAGS.classcolor(unitTarget)
         end
     end)
 end
 
-local sharedBarSettings = {
+local SHARED_BAR_SETTINGS = {
     ["countFont"] = "Expressway",
     ["countFontOutline"] = "OUTLINE",
     ["countFontSize"] = 14,
@@ -162,19 +159,22 @@ local sharedBarSettings = {
 }
 
 function ApplySharedBarSettings(profile, bar)
-    for setting, value in pairs(sharedBarSettings) do
+    for setting, value in pairs(SHARED_BAR_SETTINGS) do
         SetValue(profile, format("actionbar.%s.%s", bar, setting), value)
     end
 end
 
-local actionbarSettings = {
+local ACTION_BAR_SETTINGS = {
     ["bar1"] = {
         ["backdrop"] = true,
         ["buttonSize"] = 30,
         ["buttonSpacing"] = 1,
+        ["buttons"] = 12,
+        ["buttonsPerRow"] = 12,
         ["enabled"] = true,
         ["heightMult"] = 2,
         ["mouseover"] = true,
+        ["point"] = "BOTTOMLEFT",
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar2"] = {
@@ -184,6 +184,8 @@ local actionbarSettings = {
         ["buttons"] = 6,
         ["buttonsPerRow"] = 6,
         ["enabled"] = true,
+        ["mouseover"] = false,
+        ["point"] = "TOPLEFT",
         ["visibility"] = "[overridebar][vehicleui][possessbar][bonusbar:5] show; hide",
     },
     ["bar3"] = {
@@ -191,8 +193,10 @@ local actionbarSettings = {
         ["buttonSize"] = 28,
         ["buttonSpacing"] = 1,
         ["buttons"] = 12,
+        ["buttonsPerRow"] = 6,
         ["enabled"] = true,
         ["mouseover"] = true,
+        ["point"] = "BOTTOMLEFT",
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar4"] = {
@@ -200,9 +204,11 @@ local actionbarSettings = {
         ["buttonSize"] = 42,
         ["buttonSpacing"] = 1,
         ["buttons"] = 12,
+        ["buttonsPerRow"] = 1,
         ["enabled"] = true,
         ["showGrid"] = false,
         ["mouseover"] = true,
+        ["point"] = "BOTTOMLEFT",
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar5"] = {
@@ -210,8 +216,10 @@ local actionbarSettings = {
         ["buttonSize"] = 28,
         ["buttonSpacing"] = 1,
         ["buttons"] = 12,
+        ["buttonsPerRow"] = 6,
         ["enabled"] = true,
         ["mouseover"] = true,
+        ["point"] = "BOTTOMLEFT",
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar6"] = {
@@ -219,8 +227,10 @@ local actionbarSettings = {
         ["buttonSize"] = 30,
         ["buttonSpacing"] = 1,
         ["buttons"] = 12,
+        ["buttonsPerRow"] = 12,
         ["enabled"] = true,
         ["mouseover"] = true,
+        ["point"] = "BOTTOMLEFT",
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar13"] = {
@@ -232,6 +242,7 @@ local actionbarSettings = {
         ["enabled"] = true,
         ["mouseover"] = true,
         ["showGrid"] = false,
+        ["point"] = "BOTTOMLEFT",
         ["visibility"] = "[petbattle] hide; show",
     },
     ["barPet"] = {
@@ -263,7 +274,7 @@ function ApplyElvUIBarTweaks(profile)
     SetValue(profile, "actionbar.macroTextYOffset", 0)
 
     -- specific bar settings from table above
-    for bar, settings in pairs(actionbarSettings) do
+    for bar, settings in pairs(ACTION_BAR_SETTINGS) do
         ApplySharedBarSettings(profile, bar)
         for setting, value in pairs(settings) do
             SetValue(profile, format("actionbar.%s.%s", bar, setting), value)
@@ -285,10 +296,9 @@ end
 
 function Tweaks:ApplyElvUITweaks()
     if not ElvUI then return end
-
+    local E = unpack(ElvUI)
     local config = LUI.db.global.atrocityUI
 
-    local E = unpack(ElvUI)
     local descaledFontSize = math.floor(config.fonts.size - (config.fonts.size * (LUI.db.global.scaleFactor - 1)))
     local diminishedFontSize = math.ceil((config.fonts.size - descaledFontSize) / 2) + config.fonts.size
 
@@ -319,7 +329,6 @@ function Tweaks:ApplyElvUITweaks()
         SetValue(profiles.elv.dps, "general.fonts.questtitle", normalFont)
         SetValue(profiles.elv.dps, "general.fonts.mailbody", normalFont)
         SetValue(profiles.elv.dps, "general.fonts.errortext", normalFont)
-
         SetValue(profiles.elv.healer, "general.fonts.objective", smallFont)
         SetValue(profiles.elv.healer, "general.fonts.questsmall", normalFont)
         SetValue(profiles.elv.healer, "general.fonts.questtext", normalFont)
@@ -421,14 +430,15 @@ function Tweaks:ApplyElvUITweaks()
 
     if config.elvUI.panelBackdrop then
         SetValue(profiles.elv.dps, "chat.panelBackdrop", "HIDEBOTH")
-        SetValue(profiles.elv.healer, "chat.panelBackdrop", "HIDEBOTH")
         SetValue(profiles.elv.dps, "chat.fadeTabsNoBackdrop", true)
-        SetValue(profiles.elv.healer, "chat.fadeTabsNoBackdrop", true)
         SetValue(profiles.elv.dps, "chat.fadeChatToggles", true)
         SetValue(profiles.elv.healer, "chat.fadeChatToggles", true)
         SetValue(profiles.elv.dps, "chat.fade", true)
-        SetValue(profiles.elv.healer, "chat.fade", true)
         SetValue(profiles.elv.dps, "chat.inactivityTimer", 120)
+        SetValue(profiles.elv.healer, "chat.panelBackdrop", "HIDEBOTH")
+        SetValue(profiles.elv.healer, "chat.fadeTabsNoBackdrop", true)
+        SetValue(profiles.elv.healer, "chat.fadeChatToggles", true)
+        SetValue(profiles.elv.healer, "chat.fade", true)
         SetValue(profiles.elv.healer, "chat.inactivityTimer", 120)
     end
 
@@ -439,8 +449,8 @@ function Tweaks:ApplyElvUITweaks()
     end
 
     SetValue(profiles.elv.dps, "datatexts.panels.MinimapPanel.enable", config.elvUI.minimapDataTexts)
-    SetValue(profiles.elv.healer, "datatexts.panels.MinimapPanel.enable", config.elvUI.minimapDataTexts)
     SetValue(profiles.elv.dps, "datatexts.panels.MinimapPanel.backdrop", true)
+    SetValue(profiles.elv.healer, "datatexts.panels.MinimapPanel.enable", config.elvUI.minimapDataTexts)
     SetValue(profiles.elv.healer, "datatexts.panels.MinimapPanel.backdrop", true)
 
     -- Maps
@@ -542,10 +552,10 @@ function Tweaks:ApplyElvUITweaks()
         SetValue(profiles.elv.healer, "unitframe.units.party.name.text_format", "[classcolor][NSNickName] [afk]")
 
         SetValue(profiles.elv.dps, "unitframe.units.raid1.name.text_format", "[classcolor][NSNickName]")
-        SetValue(profiles.elv.healer, "unitframe.units.raid1.name.text_format", "[classcolor][NSNickName]")
         SetValue(profiles.elv.dps, "unitframe.units.raid2.name.text_format", "[classcolor][NSNickName]")
-        SetValue(profiles.elv.healer, "unitframe.units.raid2.name.text_format", "[classcolor][NSNickName]")
         SetValue(profiles.elv.dps, "unitframe.units.raid3.name.text_format", "[classcolor][NSNickName]")
+        SetValue(profiles.elv.healer, "unitframe.units.raid1.name.text_format", "[classcolor][NSNickName]")
+        SetValue(profiles.elv.healer, "unitframe.units.raid2.name.text_format", "[classcolor][NSNickName]")
         SetValue(profiles.elv.healer, "unitframe.units.raid3.name.text_format", "[classcolor][NSNickName]")
     end
 
@@ -553,6 +563,33 @@ function Tweaks:ApplyElvUITweaks()
     if config.elvUI.actionbars then
         ApplyElvUIBarTweaks(profiles.elv.dps)
         ApplyElvUIBarTweaks(profiles.elv.healer)
+    end
+
+    -- Add the zzz tag
+    if config.elvUI.unitFrameRestIcon then
+        SetValue(profiles.elv.dps, "unitframe.units.player.RestIcon.enable", true)
+        SetValue(profiles.elv.dps, "unitframe.units.player.RestIcon.anchorPoint", "TOPLEFT")
+        SetValue(profiles.elv.dps, "unitframe.units.player.RestIcon.size", 22)
+        SetValue(profiles.elv.dps, "unitframe.units.player.RestIcon.texture", "Resting0")
+        SetValue(profiles.elv.dps, "unitframe.units.player.RestIcon.xOffset", 2)
+        SetValue(profiles.elv.dps, "unitframe.units.player.RestIcon.yOffset", -2)
+        SetValue(profiles.elv.healer, "unitframe.units.player.RestIcon.enable", true)
+        SetValue(profiles.elv.healer, "unitframe.units.player.RestIcon.anchorPoint", "TOPLEFT")
+        SetValue(profiles.elv.healer, "unitframe.units.player.RestIcon.size", 22)
+        SetValue(profiles.elv.healer, "unitframe.units.player.RestIcon.texture", "Resting0")
+        SetValue(profiles.elv.healer, "unitframe.units.player.RestIcon.xOffset", 2)
+        SetValue(profiles.elv.healer, "unitframe.units.player.RestIcon.yOffset", -2)
+    end
+
+    if config.elvUI.disableSkins then
+        -- `enable` is just another field in `skins.blizzard` like the individual skin toggles.
+        local ENABLED_SKINS = { "enable", "misc", "objectiveTracker", "tooltip" }
+
+        for skin, _ in pairs(E.private.skins.blizzard) do
+            local enable = tContains(ENABLED_SKINS, skin)
+            SetValue(profiles.elvPrivate.dps, format("skins.blizzard.%s", skin), enable)
+            SetValue(profiles.elvPrivate.healer, format("skins.blizzard.%s", skin), enable)
+        end
     end
 
     -- Movers
@@ -620,16 +657,16 @@ function Tweaks:ApplyElvUITweaks()
 
         -- Anchor focus frame to target frame
         SetValue(profiles.elv.dps, "ElvUI_Anchor.focusEnabled", true)
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusEnabled", true)
         SetValue(profiles.elv.dps, "ElvUI_Anchor.focusParent", "ElvUF_Target")
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusParent", "ElvUF_Target")
         SetValue(profiles.elv.dps, "ElvUI_Anchor.focusPoint", "LEFT")
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusPoint", "LEFT")
         SetValue(profiles.elv.dps, "ElvUI_Anchor.focusRelative", "RIGHT")
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusRelative", "RIGHT")
         SetValue(profiles.elv.dps, "ElvUI_Anchor.focusX", 65)
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusX", 65)
         SetValue(profiles.elv.dps, "ElvUI_Anchor.focusY", 37)
+        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusEnabled", true)
+        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusParent", "ElvUF_Target")
+        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusPoint", "LEFT")
+        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusRelative", "RIGHT")
+        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusX", 65)
         SetValue(profiles.elv.healer, "ElvUI_Anchor.focusY", 37)
     end
 end
@@ -719,7 +756,7 @@ function Tweaks:ApplyDetailsTweaks()
                 end
             end
 
-            -- Re-position tooltip for ultra-wide
+            -- Re-position tooltip for ultrawide
             if config.details then
                 Details.tooltip.anchored_to = 2
                 Details.tooltip.anchor_point = "bottomright"

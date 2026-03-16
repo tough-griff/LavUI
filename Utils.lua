@@ -12,7 +12,7 @@ function LUI:Debug(data, dataName)
 end
 
 function LUI:InCombat()
-    return InCombatLockdown() or UnitAffectingCombat('player') or UnitAffectingCombat('pet')
+    return InCombatLockdown() or UnitAffectingCombat("player") or UnitAffectingCombat("pet")
 end
 
 ---@param val string

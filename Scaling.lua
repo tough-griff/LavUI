@@ -15,7 +15,7 @@ function Scaling:ScaleGuard(frame, scale, script)
         return
     end
 
-    if LUI:IsHooked(frame, "SetScale") then return end
+    if self:IsHooked(frame, "SetScale") then return end
 
     local guard
     self:SecureHook(frame, "SetScale", function()

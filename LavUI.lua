@@ -1,8 +1,8 @@
 local addon = select(2, ...)
 
----@class LUI: AceAddon, AceHook-3.0
-local LUI = LibStub("AceAddon-3.0"):NewAddon(addon, "LavUI", "AceHook-3.0")
-setglobal("LUI", LUI)
+---@class LUI: AceAddon
+local LUI = LibStub("AceAddon-3.0"):NewAddon(addon, "LavUI")
+_G.LUI = LUI
 
 function LUI:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("LavUIDB", self:GetDefaults(), DEFAULT)

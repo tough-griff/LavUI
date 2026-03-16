@@ -15,21 +15,23 @@ function LUI:GetDefaults()
                 elvUI = {
                     unitFrames = false,
                     actionbars = false,
+                    autoAcceptInvites = false,
                     databars = false,
                     disableBags = false,
-                    panels = false,
-                    panelWidth = 500,
-                    panelHeight = 268,
-                    panelBackdrop = false,
+                    disableSkins = false,
+                    guildRepairs = false,
                     minimap = false,
                     minimapDataTexts = false,
-                    tooltip = false,
-                    guildRepairs = false,
-                    autoAcceptInvites = false,
                     nicknames = false,
+                    panels = false,
+                    panelBackdrop = false,
+                    panelHeight = 268,
+                    panelWidth = 500,
+                    tooltip = false,
+                    unitFrameRestIcon = false,
                 },
-                bigWigs = false,
-                details = false,
+                bigWigs = false, -- ultrawide
+                details = false, -- ultrawide
                 plater = {
                     fonts = {
                         resize = false,
@@ -85,7 +87,7 @@ function LUI:GetOptions()
                 func = function() return Settings.OpenToCategory(39, BINDING_HEADER_LUI) end,
             },
             general = {
-                order = 100,
+                order = 10,
                 name = "General Tweaks",
                 type = "group",
                 args = {
@@ -133,7 +135,7 @@ function LUI:GetOptions()
                 },
             },
             atrocityUI = {
-                order = 10,
+                order = 20,
                 name = "AtrocityUI Tweaks",
                 type = "group",
                 args = {
@@ -155,12 +157,12 @@ function LUI:GetOptions()
                     ultrawide = {
                         order = 10,
                         type = "group",
-                        name = "Ultra-wide Tweaks",
+                        name = "Ultrawide Tweaks",
                         inline = true,
                         args = {
                             unitFrames = {
                                 name = "Unit frame positions?",
-                                desc = "On ultra-wide resolutions the unit frames are positioned " ..
+                                desc = "On ultrawide resolutions the unit frames are positioned " ..
                                     "incorrectly. Should we fix them?",
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.elvUI.unitFrames end,
@@ -168,14 +170,14 @@ function LUI:GetOptions()
                             },
                             bigWigs = {
                                 name = "BigWigs Bars?",
-                                desc = "Re-position BigWigs bars for ultra-wide, and set max bars shown to 5.",
+                                desc = "Re-position BigWigs bars for ultrawide, and set max bars shown to 5.",
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.bigWigs end,
                                 set = function(_, val) self.db.global.atrocityUI.bigWigs = val end,
                             },
                             details = {
                                 name = "Details Tweaks?",
-                                desc = "Fixes the details tooltip anchor for ultra-wide.",
+                                desc = "Fixes the details tooltip anchor for ultrawide.",
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.details end,
                                 set = function(_, val) self.db.global.atrocityUI.details = val end,
@@ -225,6 +227,13 @@ function LUI:GetOptions()
                                 get = function() return self.db.global.atrocityUI.elvUI.actionbars end,
                                 set = function(_, val) self.db.global.atrocityUI.elvUI.actionbars = val end,
                             },
+                            autoAcceptInvites = {
+                                name = "Auto accept invites?",
+                                desc = "Should we automatically accept group invites from guild mates and friends?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.elvUI.autoAcceptInvites end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.autoAcceptInvites = val end,
+                            },
                             databars = {
                                 name = "Data bars?",
                                 desc = "Should we increase the size of the experience bar when shown?",
@@ -238,6 +247,42 @@ function LUI:GetOptions()
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.elvUI.disableBags end,
                                 set = function(_, val) self.db.global.atrocityUI.elvUI.disableBags = val end,
+                            },
+                            disableSkins = {
+                                name = "Disable skins?",
+                                desc = "Should (most) ElvUI skins be disabled? I prefer the default " ..
+                                    "blizzard UI for most frames.",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.elvUI.disableSkins end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.disableSkins = val end,
+                            },
+                            guildRepairs = {
+                                name = "Use guild repairs?",
+                                desc = "Should we auto-repair with guild funds?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.elvUI.guildRepairs end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.guildRepairs = val end,
+                            },
+                            minimap = {
+                                name = "Bigger minimap?",
+                                desc = "Should we make the minimap bigger?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.elvUI.minimap end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.minimap = val end,
+                            },
+                            minimapDataTexts = {
+                                name = "Minimap datatexts?",
+                                desc = "Should we enable the datatexts under the minimap?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.elvUI.minimapDataTexts end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.minimapDataTexts = val end,
+                            },
+                            nicknames = {
+                                name = "Use nicknames?",
+                                desc = "Should we use nicknames on unit frames?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.elvUI.nicknames end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.nicknames = val end,
                             },
                             panels = {
                                 name = "Chat Panels",
@@ -282,48 +327,20 @@ function LUI:GetOptions()
                                     },
                                 },
                             },
-                            minimap = {
-                                name = "Bigger minimap?",
-                                desc = "Should we make the minimap bigger?",
-                                type = "toggle",
-                                get = function() return self.db.global.atrocityUI.elvUI.minimap end,
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.minimap = val end,
-                            },
-                            minimapDataTexts = {
-                                name = "Minimap datatexts?",
-                                desc = "Should we enable the datatexts under the minimap?",
-                                type = "toggle",
-                                get = function() return self.db.global.atrocityUI.elvUI.minimapDataTexts end,
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.minimapDataTexts = val end,
-                            },
                             tooltip = {
                                 name = "Tooltip tweaks?",
-                                desc = "Should we disable item count and set the modifier key to SHIFT?",
+                                desc = "Should we disable item count?",
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.elvUI.tooltip end,
                                 set = function(_, val) self.db.global.atrocityUI.elvUI.tooltip = val end,
                             },
-                            guildRepairs = {
-                                name = "Use guild repairs?",
-                                desc = "Should we auto-repair with guild funds?",
+                            unitFrameRestIcon = {
+                                name = "Rest icon?",
+                                desc = "Should we show the rest icon on the player frame when rested?",
                                 type = "toggle",
-                                get = function() return self.db.global.atrocityUI.elvUI.guildRepairs end,
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.guildRepairs = val end,
+                                get = function() return self.db.global.atrocityUI.elvUI.unitFrameRestIcon end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.unitFrameRestIcon = val end,
                             },
-                            autoAcceptInvites = {
-                                name = "Auto accept invites?",
-                                desc = "Should we automatically accept group invites from guild mates and friends?",
-                                type = "toggle",
-                                get = function() return self.db.global.atrocityUI.elvUI.autoAcceptInvites end,
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.autoAcceptInvites = val end,
-                            },
-                            nicknames = {
-                                name = "Use nicknames?",
-                                desc = "Should we use nicknames on unit frames?",
-                                type = "toggle",
-                                get = function() return self.db.global.atrocityUI.elvUI.nicknames end,
-                                set = function(_, val) self.db.global.atrocityUI.elvUI.nicknames = val end,
-                            }
                         },
                     },
                     plater = {
