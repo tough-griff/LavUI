@@ -81,7 +81,7 @@ function LUI:GetOptions()
                 confirmText = "Reset your configuration and reload UI?",
                 func = function()
                     self.db:ResetDB(DEFAULT)
-                    return Tweaks:ApplyTweaks()
+                    return ReloadUI()
                 end,
             },
             keybindings = {
