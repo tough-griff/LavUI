@@ -4,6 +4,7 @@ local LUI = select(2, ...)
 local Tweaks = LUI:NewModule("Tweaks", "AceHook-3.0")
 
 local profiles = {
+    aes = {},
     elv = {
         dps = {},
         healer = {}
@@ -49,6 +50,15 @@ local function SetValue(destinations, path, value)
 end
 
 function Tweaks:LoadProfiles()
+    -- atrocityEssentials
+    if atrocityEssentialsDB then
+        for profileName, profile in pairs(atrocityEssentialsDB["profiles"]) do
+            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
+                profiles.aes[profileName] = profile
+            end
+        end
+    end
+
     -- ElvUI Base
     if ElvDB then
         for profileName, profile in pairs(ElvDB["profiles"]) do
@@ -105,50 +115,26 @@ function Tweaks:LoadProfiles()
     LUI:Debug(profiles, "LoadProfiles")
 end
 
---- Hide the text of CDM bars when the value is zero.
-function Tweaks:HookACDM()
-    if not Ayije_CDM or not Ayije_CDM.TAGS then return end
-
+function Tweaks:ApplyAtrocityEssentialsTweaks()
     local config = LUI.db.global.atrocityUI
-
-    if config.acdm.hideWhenZero then
-        self:Hook(Ayije_CDM.TAGS, "UpdateTagText", function(_, textFrame)
-            if not textFrame or not textFrame.text or self:IsHooked(textFrame.text, "SetFormattedText") then return end
-            self:SecureHook(textFrame.text, "SetFormattedText", function(_, text, value)
-                if text == "%d" then
-                    textFrame.text:SetText(C_StringUtil.TruncateWhenZero(value))
-                end
-            end)
-        end)
+    if config.aes.disableMissingBuffs then
+        for _, opt in pairs({ "Flask", "Food", "MHEnchant", "OHEnchant", "Poisons", "RaidBuffs", "Rune" }) do
+            SetValue(profiles.aes, format("MissingBuffs.Consumables.%s.Enabled", opt), false)
+        end
     end
-end
 
-function Tweaks:HookElvUI()
-    if not ElvUI then return end
-    local E = unpack(ElvUI)
+    if config.aes.enableCombatCross then
+        SetValue(profiles.aes, "CombatCross.Enabled", true)
+    end
 
-    -- Add the "classcolor:target" tag to ElvUI since they removed it but it still
-    -- seems to function just fine.
-    E:AddTag("classcolor:target", "UNIT_TARGET", function(unit)
-        local unitTarget = unit .. "target"
-        if UnitExists(unitTarget) then
-            return _TAGS.classcolor(unitTarget)
-        end
-    end)
+    if config.aes.disableAutomations then
+        SetValue(profiles.aes, "Miscellaneous.Automation.AutoAcceptQuests", false)
+        SetValue(profiles.aes, "Miscellaneous.Automation.AutoTurnInQuests", false)
+        SetValue(profiles.aes, "Miscellaneous.Automation.HideTalkingHead", false)
+    end
 
-    -- Remove "Enchant XYZ - " from enchant names on the character screen.
-    self:Hook(E, "InspectGearSlot", function(_, line, lineText, slotInfo)
-        local enchant = slotInfo.enchantTextReal
-        if enchant then
-            local color1, color2 = strmatch(enchant, '(|cn.-:).-(|r)')
-            local text = gsub(gsub(gsub(enchant, "%s?|A.-|a", ""), "|cn.-:(.-)|r", "%1"), "Enchant %a+ %- ", "")
-            local shortStrip = gsub(text, "[&+] ?", "")
-            local shortAbbrev = E.db.general.itemLevel.enchantAbbrev and gsub(shortStrip, '(%w%w%w)%w+', '%1')
-            local truncated = string.utf8sub(shortAbbrev or shortStrip, 1, 20)
-            slotInfo.enchantText = format('%s%s%s', color1 or '', text, color2 or '')
-            slotInfo.enchantTextShort = format('%s%s%s', color1 or '', truncated, color2 or '')
-        end
-    end)
+    -- LUI has its own hotkey for hiding its modified action bars using the mouseover state.
+    SetValue(profiles.aes, "Miscellaneous.HideBars.Enabled", false)
 end
 
 local SHARED_BAR_SETTINGS = {
@@ -868,7 +854,54 @@ function Tweaks:ApplyWarpDepleteTweaks()
     end
 end
 
+--- Hide the text of CDM bars when the value is zero.
+function Tweaks:HookACDM()
+    if not Ayije_CDM or not Ayije_CDM.TAGS then return end
+
+    local config = LUI.db.global.atrocityUI
+
+    if config.acdm.hideWhenZero then
+        self:Hook(Ayije_CDM.TAGS, "UpdateTagText", function(_, textFrame)
+            if not textFrame or not textFrame.text or self:IsHooked(textFrame.text, "SetFormattedText") then return end
+            self:SecureHook(textFrame.text, "SetFormattedText", function(_, text, value)
+                if text == "%d" then
+                    textFrame.text:SetText(C_StringUtil.TruncateWhenZero(value))
+                end
+            end)
+        end)
+    end
+end
+
+function Tweaks:HookElvUI()
+    if not ElvUI then return end
+    local E = unpack(ElvUI)
+
+    -- Add the "classcolor:target" tag to ElvUI since they removed it but it still
+    -- seems to function just fine.
+    E:AddTag("classcolor:target", "UNIT_TARGET", function(unit)
+        local unitTarget = unit .. "target"
+        if UnitExists(unitTarget) then
+            return _TAGS.classcolor(unitTarget)
+        end
+    end)
+
+    -- Remove "Enchant XYZ - " from enchant names on the character screen.
+    self:Hook(E, "InspectGearSlot", function(_, line, lineText, slotInfo)
+        local enchant = slotInfo.enchantTextReal
+        if enchant then
+            local color1, color2 = strmatch(enchant, '(|cn.-:).-(|r)')
+            local text = gsub(gsub(gsub(enchant, "%s?|A.-|a", ""), "|cn.-:(.-)|r", "%1"), "Enchant %a+ %- ", "")
+            local shortStrip = gsub(text, "[&+] ?", "")
+            local shortAbbrev = E.db.general.itemLevel.enchantAbbrev and gsub(shortStrip, '(%w%w%w)%w+', '%1')
+            local truncated = string.utf8sub(shortAbbrev or shortStrip, 1, 20)
+            slotInfo.enchantText = format('%s%s%s', color1 or '', text, color2 or '')
+            slotInfo.enchantTextShort = format('%s%s%s', color1 or '', truncated, color2 or '')
+        end
+    end)
+end
+
 function Tweaks:ApplyTweaks()
+    self:ApplyAtrocityEssentialsTweaks()
     self:ApplyElvUITweaks()
     self:ApplyBigWigsTweaks()
     self:ApplyDetailsTweaks()

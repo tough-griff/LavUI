@@ -42,6 +42,11 @@ function LUI:GetDefaults()
                 acdm = {
                     hideWhenZero = false,
                 },
+                aes = {
+                    disableMissingBuffs = false,
+                    enableCombatCross = false,
+                    disableAutomations = false,
+                }
             },
         }
     }
@@ -391,9 +396,41 @@ function LUI:GetOptions()
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.acdm.hideWhenZero end,
                                 set = function(_, val) self.db.global.atrocityUI.acdm.hideWhenZero = val end,
+                            },
+                        },
+                    },
+                    aes = {
+                        order = 60,
+                        type = "group",
+                        name = "AtrocityEssentials Tweaks",
+                        inline = true,
+                        args = {
+                            disableMissingBuffs = {
+                                name = "Disable missing buffs?",
+                                desc = "Should we disable the missing buff icons? I use BuffReminders instead.",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.aes.disableMissingBuffs end,
+                                set = function(_, val) self.db.global.atrocityUI.aes.disableMissingBuffs = val end,
+                            },
+                            enableCombatCross = {
+                                name = "Enable combat cross?",
+                                desc = "Should we enable the combat cross?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.aes.enableCombatCross end,
+                                set = function(_, val) self.db.global.atrocityUI.aes.enableCombatCross = val end,
+                            },
+                            disableAutomations = {
+                                name = "Disable some automations?",
+                                width = "double",
+                                desc = "Disables a few automations.\n\n" ..
+                                    "1. Talking Head, I manage this with Plumber.\n" ..
+                                    "2. Auto quest accept/turn in, I manage this with WindTools.",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.aes.disableAutomations end,
+                                set = function(_, val) self.db.global.atrocityUI.aes.disableAutomations = val end,
                             }
-                        }
-                    }
+                        },
+                    },
                 },
             },
         },
