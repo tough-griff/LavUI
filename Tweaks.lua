@@ -51,12 +51,12 @@ end
 function Tweaks:LoadProfiles()
     -- ElvUI Base
     if ElvDB then
-        for k, v in pairs(ElvDB["profiles"]) do
-            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
-                if LUI:ContainsIgnoreCase(k, "healer") then
-                    table.insert(profiles.elv.healer, v)
+        for profileName, profile in pairs(ElvDB["profiles"]) do
+            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
+                if LUI:ContainsIgnoreCase(profileName, "healer") then
+                    profiles.elv.healer[profileName] = profile
                 else
-                    table.insert(profiles.elv.dps, v)
+                    profiles.elv.dps[profileName] = profile
                 end
             end
         end
@@ -64,12 +64,12 @@ function Tweaks:LoadProfiles()
 
     -- ElvUI Private
     if ElvPrivateDB then
-        for k, v in pairs(ElvPrivateDB["profiles"]) do
-            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
-                if LUI:ContainsIgnoreCase(k, "healer") then
-                    table.insert(profiles.elvPrivate.healer, v)
+        for profileName, profile in pairs(ElvPrivateDB["profiles"]) do
+            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
+                if LUI:ContainsIgnoreCase(profileName, "healer") then
+                    profiles.elvPrivate.healer[profileName] = profile
                 else
-                    table.insert(profiles.elvPrivate.dps, v)
+                    profiles.elvPrivate.dps[profileName] = profile
                 end
             end
         end
@@ -77,27 +77,27 @@ function Tweaks:LoadProfiles()
 
     -- BigWigs
     if BigWigs3DB then
-        for k, v in pairs(BigWigs3DB["namespaces"]["BigWigs_Plugins_Bars"]["profiles"]) do
-            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
-                table.insert(profiles.bigWigs, v)
+        for profileName, profile in pairs(BigWigs3DB["namespaces"]["BigWigs_Plugins_Bars"]["profiles"]) do
+            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
+                profiles.bigWigs[profileName] = profile
             end
         end
     end
 
     -- WarpDeplete
     if WarpDepleteDB then
-        for k, v in pairs(WarpDepleteDB["profiles"]) do
-            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
-                table.insert(profiles.warpDeplete, v)
+        for profileName, profile in pairs(WarpDepleteDB["profiles"]) do
+            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
+                profiles.warpDeplete[profileName] = profile
             end
         end
     end
 
     -- Plater
     if Plater then
-        for k, v in pairs(Plater.db["profiles"]) do
-            if LUI:StartsWithIgnoreCase(k, "atrocityui") then
-                table.insert(profiles.plater, v)
+        for profileName, profile in pairs(Plater.db["profiles"]) do
+            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
+                profiles.plater[profileName] = profile
             end
         end
     end
@@ -123,16 +123,30 @@ function Tweaks:HookACDM()
     end
 end
 
---- Add the "classcolor:target" tag to ElvUI since they removed it but it still
---- seems to function just fine.
-function Tweaks:AddElvUITags()
+function Tweaks:HookElvUI()
     if not ElvUI then return end
     local E = unpack(ElvUI)
 
+    -- Add the "classcolor:target" tag to ElvUI since they removed it but it still
+    -- seems to function just fine.
     E:AddTag("classcolor:target", "UNIT_TARGET", function(unit)
         local unitTarget = unit .. "target"
         if UnitExists(unitTarget) then
             return _TAGS.classcolor(unitTarget)
+        end
+    end)
+
+    -- Remove "Enchant XYZ - " from enchant names on the character screen.
+    self:Hook(E, "InspectGearSlot", function(_, line, lineText, slotInfo)
+        local enchant = slotInfo.enchantTextReal
+        if enchant then
+            local color1, color2 = strmatch(enchant, '(|cn.-:).-(|r)')
+            local text = gsub(gsub(gsub(enchant, "%s?|A.-|a", ""), "|cn.-:(.-)|r", "%1"), "Enchant %a+ %- ", "")
+            local shortStrip = gsub(text, "[&+] ?", "")
+            local shortAbbrev = E.db.general.itemLevel.enchantAbbrev and gsub(shortStrip, '(%w%w%w)%w+', '%1')
+            local truncated = string.utf8sub(shortAbbrev or shortStrip, 1, 20)
+            slotInfo.enchantText = format('%s%s%s', color1 or '', text, color2 or '')
+            slotInfo.enchantTextShort = format('%s%s%s', color1 or '', truncated, color2 or '')
         end
     end)
 end
@@ -585,7 +599,7 @@ function Tweaks:ApplyElvUITweaks()
         -- `enable` is just another field in `skins.blizzard` like the individual skin toggles.
         local ENABLED_SKINS = { "enable", "misc", "objectiveTracker", "tooltip" }
 
-        for skin, _ in pairs(E.private.skins.blizzard) do
+        for skin in pairs(E.private.skins.blizzard) do
             local enable = tContains(ENABLED_SKINS, skin)
             SetValue(profiles.elvPrivate.dps, format("skins.blizzard.%s", skin), enable)
             SetValue(profiles.elvPrivate.healer, format("skins.blizzard.%s", skin), enable)
@@ -855,8 +869,6 @@ function Tweaks:ApplyWarpDepleteTweaks()
 end
 
 function Tweaks:ApplyTweaks()
-    self:LoadProfiles()
-
     self:ApplyElvUITweaks()
     self:ApplyBigWigsTweaks()
     self:ApplyDetailsTweaks()
@@ -872,7 +884,7 @@ end
 
 function Tweaks:OnEnable()
     self:HookACDM()
-    self:AddElvUITags()
+    self:HookElvUI()
 end
 
 function Tweaks:OnDisable()
