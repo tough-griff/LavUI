@@ -37,6 +37,7 @@ function LUI:GetDefaults()
                         resize = false,
                         size = 14,
                     },
+                    biggerMark = false,
                     friendly = false,
                 },
                 acdm = {
@@ -381,6 +382,14 @@ function LUI:GetOptions()
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.plater.friendly end,
                                 set = function(_, val) self.db.global.atrocityUI.plater.friendly = val end,
+                            },
+                            biggerMark = {
+                                order = 30,
+                                name = "Bigger raid markers?",
+                                desc = "Should we make the raid markers bigger and more visible?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.plater.biggerMark end,
+                                set = function(_, val) self.db.global.atrocityUI.plater.biggerMark = val end,
                             },
                         },
                     },

@@ -823,6 +823,10 @@ function Tweaks:ApplyPlaterConfig()
         })
     end
 
+    if config.plater.biggerMark then
+        SetValue(profiles.plater, "indicator_raidmark_scale", 1.5)
+    end
+
     Plater.RefreshDBUpvalues()
     Plater.UpdateAllPlates()
     Plater.RefreshAutoToggle()
