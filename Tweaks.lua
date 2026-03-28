@@ -115,7 +115,7 @@ function Tweaks:LoadProfiles()
     LUI:Debug(profiles, "LoadProfiles")
 end
 
-function Tweaks:ApplyAtrocityEssentialsTweaks()
+function Tweaks:ApplyAtrocityEssentialsConfig()
     local config = LUI.db.global.atrocityUI
     if config.aes.disableMissingBuffs then
         for _, opt in pairs({ "Flask", "Food", "MHEnchant", "OHEnchant", "Poisons", "RaidBuffs", "Rune" }) do
@@ -256,7 +256,7 @@ local ACTION_BAR_SETTINGS = {
     },
 }
 
-function ApplyElvUIBarTweaks(profile)
+function ApplyElvUIBarConfig(profile)
     local config = LUI.db.global.atrocityUI
 
     -- "global" actionbar settings
@@ -294,7 +294,7 @@ function ApplyElvUIBarTweaks(profile)
     SetValue(profile, "movers.PetAB", format("BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-%d,3", panelOffset))
 end
 
-function Tweaks:ApplyElvUITweaks()
+function Tweaks:ApplyElvUIConfig()
     if not ElvUI then return end
     local E = unpack(ElvUI)
     local config = LUI.db.global.atrocityUI
@@ -561,8 +561,8 @@ function Tweaks:ApplyElvUITweaks()
 
     -- Actionbar Overhaul
     if config.elvUI.actionbars then
-        ApplyElvUIBarTweaks(profiles.elv.dps)
-        ApplyElvUIBarTweaks(profiles.elv.healer)
+        ApplyElvUIBarConfig(profiles.elv.dps)
+        ApplyElvUIBarConfig(profiles.elv.healer)
     end
 
     -- Add the zzz tag
@@ -671,7 +671,7 @@ function Tweaks:ApplyElvUITweaks()
     end
 end
 
-function Tweaks:ApplyBigWigsTweaks()
+function Tweaks:ApplyBigWigsConfig()
     if not BigWigs3DB then return end
 
     local config = LUI.db.global.atrocityUI
@@ -700,7 +700,7 @@ function Tweaks:ApplyBigWigsTweaks()
     end
 end
 
-function Tweaks:ApplyDetailsTweaks()
+function Tweaks:ApplyDetailsConfig()
     if not Details then return end
 
     local config = LUI.db.global.atrocityUI
@@ -773,7 +773,7 @@ function Tweaks:ApplyDetailsTweaks()
     end
 end
 
-function Tweaks:ApplyPlaterTweaks()
+function Tweaks:ApplyPlaterConfig()
     if not Plater then return end
 
     local config = LUI.db.global.atrocityUI
@@ -828,7 +828,7 @@ function Tweaks:ApplyPlaterTweaks()
     Plater.RefreshAutoToggle()
 end
 
-function Tweaks:ApplyWarpDepleteTweaks()
+function Tweaks:ApplyWarpDepleteConfig()
     if not WarpDepleteDB then return end
 
     local config = LUI.db.global.atrocityUI
@@ -855,7 +855,7 @@ function Tweaks:ApplyWarpDepleteTweaks()
 end
 
 --- Hide the text of CDM bars when the value is zero.
-function Tweaks:HookACDM()
+function Tweaks:TweakACDM()
     if not Ayije_CDM or not Ayije_CDM.TAGS then return end
 
     local config = LUI.db.global.atrocityUI
@@ -872,7 +872,126 @@ function Tweaks:HookACDM()
     end
 end
 
-function Tweaks:HookElvUI()
+local TIER_1 = "|A:Professions-ChatIcon-Quality-12-Tier1:20:20|a"
+local TIER_2 = "|A:Professions-ChatIcon-Quality-12-Tier2:20:20|a"
+local ENCHANT_MAP = {
+    -- Helm
+    ["Blessing of Speed"] = {
+        [TIER_1] = "+9 Speed",
+        [TIER_2] = "+13 Speed",
+    },
+    ["Empowered Blessing of Speed"] = {
+        [TIER_1] = "+17 Speed",
+        [TIER_2] = "+22 Speed",
+    },
+    ["Hex of Leeching"] = {
+        [TIER_1] = "+22 Leech",
+        [TIER_2] = "+33 Leech",
+    },
+    ["Empowered Hex of Leeching"] = {
+        [TIER_1] = "+44 Leech",
+        [TIER_2] = "+55 Leech",
+    },
+    ["Rune of Avoidance"] = {
+        [TIER_1] = "+15 Avoid",
+        [TIER_2] = "+22 Avoid",
+    },
+    ["Empowered Rune of Avoidance"] = {
+        [TIER_1] = "+30 Avoid",
+        [TIER_2] = "+37 Avoid",
+    },
+    -- Shoulders
+    ["Flight of the Eagle"] = {
+        [TIER_1] = "+26 Speed",
+        [TIER_2] = "+39 Speed",
+    },
+    ["Akil'zon's Swiftness"] = {
+        [TIER_1] = "+52 Speed",
+        [TIER_2] = "+65 Speed",
+    },
+    ["Thalassian Recovery"] = {
+        [TIER_1] = "+66 Leech",
+        [TIER_2] = "+99 Leech",
+    },
+    ["Silvermoon's Mending"] = {
+        [TIER_1] = "+132 Leech",
+        [TIER_2] = "+166 Leech",
+    },
+    ["Nature's Grace"] = {
+        [TIER_1] = "+44 Avoid",
+        [TIER_2] = "+67 Avoid",
+    },
+    ["Amirdrassil's Grace"] = {
+        [TIER_1] = "+89 Avoid",
+        [TIER_2] = "+111 Avoid",
+    },
+    -- Chest
+    ["Mark of Nalorakk"] = {
+        [TIER_1] = "+32 Str +93 Stam",
+        [TIER_2] = "+40 Str +116 Stam",
+    },
+    ["Mark of the Magister"] = {
+        [TIER_1] = "+32 Int 2% Mana",
+        [TIER_2] = "+40 Int 5% Mana",
+    },
+    ["Mark of the Rootwarden"] = {
+        [TIER_1] = "+32 Agi +12 Speed",
+        [TIER_2] = "+40 Agi +15 Speed",
+    },
+    ["Mark of the Worldsoul"] = {
+        [TIER_1] = "+36 Stats",
+        [TIER_2] = "+50 Stats",
+    },
+    -- Boots
+    ["Lynx's Dexterity"] = {
+        [TIER_1] = "+15 Avoid +186 Stam",
+        [TIER_2] = "+19 Avoid +232 Stam",
+    },
+    ["Farstrider's Hunt"] = {
+        [TIER_1] = "+9 Speed +186 Stam",
+        [TIER_2] = "+11 Speed +232 Stam",
+    },
+    ["Shaladrassil's Roots"] = {
+        [TIER_1] = "+22 Leech +186 Stam",
+        [TIER_2] = "+28 Leech +232 Stam",
+    },
+    -- Rings
+    ["Nature's Wrath"] = {
+        [TIER_1] = "+22 Crit",
+        [TIER_2] = "+24 Crit",
+    },
+    ["Nature's Fury"] = {
+        [TIER_1] = "+27 Crit",
+        [TIER_2] = "+29 Crit"
+    },
+    ["Amani Mastery"] = {
+        [TIER_1] = "+22 Mastery",
+        [TIER_2] = "+24 Mastery",
+    },
+    ["Zul'jin's Mastery"] = {
+        [TIER_1] = "+27 Mastery",
+        [TIER_2] = "+29 Mastery",
+    },
+    ["Thalassian Haste"] = {
+        [TIER_1] = "+22 Haste",
+        [TIER_2] = "+24 Haste",
+    },
+    ["Silvermoon's Alacrity"] = {
+        [TIER_1] = "+27 Haste",
+        [TIER_2] = "+29 Haste",
+    },
+    ["Thalassian Versatility"] = {
+        [TIER_1] = "+22 Vers",
+        [TIER_2] = "+24 Vers",
+    },
+    ["Silvermoon's Tenacity"] = {
+        [TIER_1] = "+27 Vers",
+        [TIER_2] = "+29 Vers",
+    },
+    ["Eyes of the Eagle"] = "Crit Effect",
+}
+
+function Tweaks:TweakElvUI()
     if not ElvUI then return end
     local E = unpack(ElvUI)
 
@@ -889,24 +1008,31 @@ function Tweaks:HookElvUI()
     self:Hook(E, "InspectGearSlot", function(_, line, lineText, slotInfo)
         local enchant = slotInfo.enchantTextReal
         if enchant then
-            local color1, color2 = strmatch(enchant, '(|cn.-:).-(|r)')
+            local color1, color2 = strmatch(enchant, "(|cn.-:).-(|r)")
+            local quality = strmatch(enchant, "%s?(|A.-|a)")
             local text = gsub(gsub(gsub(enchant, "%s?|A.-|a", ""), "|cn.-:(.-)|r", "%1"), "Enchant %a+ %- ", "")
-            local shortStrip = gsub(text, "[&+] ?", "")
-            local shortAbbrev = E.db.general.itemLevel.enchantAbbrev and gsub(shortStrip, '(%w%w%w)%w+', '%1')
+            if ENCHANT_MAP[text] then
+                text = ENCHANT_MAP[text]
+                if type(text) == "table" then
+                    text = text[quality]
+                end
+            end
+            local shortStrip = gsub(text, "& ?", "")
+            local shortAbbrev = E.db.general.itemLevel.enchantAbbrev and gsub(shortStrip, "(%w%w%w)%w+", "%1")
             local truncated = string.utf8sub(shortAbbrev or shortStrip, 1, 20)
-            slotInfo.enchantText = format('%s%s%s', color1 or '', text, color2 or '')
-            slotInfo.enchantTextShort = format('%s%s%s', color1 or '', truncated, color2 or '')
+            slotInfo.enchantText = format("%s%s%s", color1 or "", text, color2 or "")
+            slotInfo.enchantTextShort = format("%s%s%s", color1 or "", truncated, color2 or "")
         end
     end)
 end
 
-function Tweaks:ApplyTweaks()
-    self:ApplyAtrocityEssentialsTweaks()
-    self:ApplyElvUITweaks()
-    self:ApplyBigWigsTweaks()
-    self:ApplyDetailsTweaks()
-    self:ApplyPlaterTweaks()
-    self:ApplyWarpDepleteTweaks()
+function Tweaks:ApplyAUIConfig()
+    self:ApplyAtrocityEssentialsConfig()
+    self:ApplyElvUIConfig()
+    self:ApplyBigWigsConfig()
+    self:ApplyDetailsConfig()
+    self:ApplyPlaterConfig()
+    self:ApplyWarpDepleteConfig()
 
     ReloadUI()
 end
@@ -916,8 +1042,8 @@ function Tweaks:OnInitialize()
 end
 
 function Tweaks:OnEnable()
-    self:HookACDM()
-    self:HookElvUI()
+    self:TweakACDM()
+    self:TweakElvUI()
 end
 
 function Tweaks:OnDisable()

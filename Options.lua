@@ -70,7 +70,7 @@ function LUI:GetOptions()
                 name = "Apply changes",
                 desc = "To apply changes, you might need to reload your UI.",
                 type = "execute",
-                func = function() return Tweaks:ApplyTweaks() end,
+                func = function() return Tweaks:ApplyAUIConfig() end,
             },
             reset = {
                 order = 1001,
