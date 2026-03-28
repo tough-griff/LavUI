@@ -1035,7 +1035,7 @@ function Tweaks:TweakElvUI()
             end
             local shortStrip = gsub(text, "& ?", "")
             local shortAbbrev = E.db.general.itemLevel.enchantAbbrev and gsub(shortStrip, "(%w%w%w)%w+", "%1")
-            local truncated = string.utf8sub(shortAbbrev or shortStrip, 1, 21)
+            local truncated = string.utf8sub(shortAbbrev or shortStrip, 1, 21) ---@diagnostic disable-line: undefined-field
             slotInfo.enchantText = format("%s%s%s", color1 or "", text, color2 or "")
             slotInfo.enchantTextShort = format("%s%s%s", color1 or "", truncated, color2 or "")
         end
