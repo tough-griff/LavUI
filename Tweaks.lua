@@ -942,6 +942,15 @@ local ENCHANT_MAP = {
         [TIER_1] = "+36 Stats",
         [TIER_2] = "+50 Stats",
     },
+    -- Legs
+    ["+32 Agility/Strength & +70 Stamina"] = "+32 Agi/Str +70 Stam",
+    ["+41 Agility/Strength & +115 Stamina"] = "+41 Agi/Str +115 Stam",
+    ["+32 Agility/Strength & +16 Stamina"] = "+32 Agi/Str +16 Armor",
+    ["+41 Agility/Strength & +27 Armor"] = "+41 Agi/Str +27 Armor",
+    ["+32 Intellect & +70 Stamina"] = "+32 Int +70 Stam",
+    ["+41 Intellect & +115 Stamina"] = "+41 Int +115 Stam",
+    ["+32 Intellect & 3% Mana"] = "+32 Int 3% Mana",
+    ["+41 Intellect & 4% Mana"] = "+41 Int 4% Mana",
     -- Boots
     ["Lynx's Dexterity"] = {
         [TIER_1] = "+15 Avoid +186 Stam",
@@ -989,6 +998,9 @@ local ENCHANT_MAP = {
         [TIER_2] = "+29 Vers",
     },
     ["Eyes of the Eagle"] = "Crit Effect",
+    -- Weapons
+    ["Acuity of the Ren'dorei"] = "Acuity",
+    ["Flames of the Sin'dorei"] = "Flames",
 }
 
 function Tweaks:TweakElvUI()
@@ -1019,7 +1031,7 @@ function Tweaks:TweakElvUI()
             end
             local shortStrip = gsub(text, "& ?", "")
             local shortAbbrev = E.db.general.itemLevel.enchantAbbrev and gsub(shortStrip, "(%w%w%w)%w+", "%1")
-            local truncated = string.utf8sub(shortAbbrev or shortStrip, 1, 20)
+            local truncated = string.utf8sub(shortAbbrev or shortStrip, 1, 21)
             slotInfo.enchantText = format("%s%s%s", color1 or "", text, color2 or "")
             slotInfo.enchantTextShort = format("%s%s%s", color1 or "", truncated, color2 or "")
         end
