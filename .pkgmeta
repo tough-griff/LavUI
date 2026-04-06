@@ -12,5 +12,5 @@ externals:
 
 ignore:
   - Libs/LibStub/tests
-  - '*.cmd'
-  - '*.sh'
+  - "*.cmd"
+  - "*.sh"

@@ -20,6 +20,7 @@ function LUI:GetDefaults()
                     disableBags = false,
                     disableSkins = false,
                     guildRepairs = false,
+                    lowerLeftRaidFrames = false,
                     minimap = false,
                     minimapDataTexts = false,
                     nicknames = false,
@@ -44,10 +45,16 @@ function LUI:GetDefaults()
                     hideWhenZero = false,
                 },
                 aes = {
-                    disableMissingBuffs = false,
-                    enableCombatCross = false,
                     disableAutomations = false,
-                }
+                    disableCopyAnything = false,
+                    enableCombatCross = false,
+                },
+                buffReminders = {
+                    smart = false,
+                },
+                timelineReminders = {
+                    enabled = false,
+                },
             },
         }
     }
@@ -269,6 +276,13 @@ function LUI:GetOptions()
                                 get = function() return self.db.global.atrocityUI.elvUI.guildRepairs end,
                                 set = function(_, val) self.db.global.atrocityUI.elvUI.guildRepairs = val end,
                             },
+                            lowerLeftRaidFrames = {
+                                name = "Lower left raid frames?",
+                                desc = "Should we move the raid frames to the lower left, just above the chat panel?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.elvUI.lowerLeftRaidFrames end,
+                                set = function(_, val) self.db.global.atrocityUI.elvUI.lowerLeftRaidFrames = val end,
+                            },
                             minimap = {
                                 name = "Bigger minimap?",
                                 desc = "Should we make the minimap bigger?",
@@ -414,20 +428,6 @@ function LUI:GetOptions()
                         name = "AtrocityEssentials Tweaks",
                         inline = true,
                         args = {
-                            disableMissingBuffs = {
-                                name = "Disable missing buffs?",
-                                desc = "Should we disable the missing buff icons? I use BuffReminders instead.",
-                                type = "toggle",
-                                get = function() return self.db.global.atrocityUI.aes.disableMissingBuffs end,
-                                set = function(_, val) self.db.global.atrocityUI.aes.disableMissingBuffs = val end,
-                            },
-                            enableCombatCross = {
-                                name = "Enable combat cross?",
-                                desc = "Should we enable the combat cross?",
-                                type = "toggle",
-                                get = function() return self.db.global.atrocityUI.aes.enableCombatCross end,
-                                set = function(_, val) self.db.global.atrocityUI.aes.enableCombatCross = val end,
-                            },
                             disableAutomations = {
                                 name = "Disable some automations?",
                                 width = "double",
@@ -437,7 +437,53 @@ function LUI:GetOptions()
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.aes.disableAutomations end,
                                 set = function(_, val) self.db.global.atrocityUI.aes.disableAutomations = val end,
-                            }
+                            },
+                            disableCopyAnything = {
+                                name = "Disable copy anything?",
+                                desc = "Should we disable the copy anything feature?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.aes.disableCopyAnything end,
+                                set = function(_, val) self.db.global.atrocityUI.aes.disableCopyAnything = val end,
+                            },
+                            enableCombatCross = {
+                                name = "Enable combat cross?",
+                                desc = "Should we enable the combat cross?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.aes.enableCombatCross end,
+                                set = function(_, val) self.db.global.atrocityUI.aes.enableCombatCross = val end,
+                            },
+
+                        },
+                    },
+                    buffReminders = {
+                        order = 70,
+                        type = "group",
+                        name = "BuffReminders Tweaks",
+                        inline = true,
+                        args = {
+                            smart = {
+                                name = "Smart buff tracking?",
+                                desc = "Should we use smart tracking mode, " ..
+                                    "which only shows buffs that are relevant to your class?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.buffReminders.smart end,
+                                set = function(_, val) self.db.global.atrocityUI.buffReminders.smart = val end,
+                            },
+                        },
+                    },
+                    timelineReminders = {
+                        order = 80,
+                        type = "group",
+                        name = "TimelineReminders Tweaks",
+                        inline = true,
+                        args = {
+                            enabled = {
+                                name = "Set anchors?",
+                                desc = "Should we set anchors for timeline reminders?",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.timelineReminders.enabled end,
+                                set = function(_, val) self.db.global.atrocityUI.timelineReminders.enabled = val end,
+                            },
                         },
                     },
                 },

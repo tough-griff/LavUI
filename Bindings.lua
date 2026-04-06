@@ -39,6 +39,9 @@ function LUI:TogglePanel(hide)
     if hide == true then
         Panel:Hide()
         Details:ReopenAllWindows()
+        for _, instance in Details:ListInstances() do
+            instance:RefreshWindow(true)
+        end
     elseif hide == false then
         Panel:Show()
         Details:ShutDownAllInstances()

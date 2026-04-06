@@ -3,20 +3,16 @@ local LUI = select(2, ...)
 ---@class Tweaks: AceModule, AceHook-3.0
 local Tweaks = LUI:NewModule("Tweaks", "AceHook-3.0")
 
-local profiles = {
+Tweaks.profiles = {
     aes = {},
-    elv = {
-        dps = {},
-        healer = {}
-    },
-    elvPrivate = {
-        dps = {},
-        healer = {}
-    },
     bigWigs = {},
+    br = {},
+    elv = { dps = {}, healer = {} },
+    elvPrivate = { dps = {}, healer = {} },
+    plater = {},
     warpDeplete = {},
-    plater = {}
 }
+local profiles = Tweaks.profiles
 
 --- Set the value nested at `path` on all tables in the `destinations` array.
 --- The `path` is a string of keys separated by dots, e.g `"actionbar.bar1.buttonSize"`.
@@ -59,6 +55,24 @@ function Tweaks:LoadProfiles()
         end
     end
 
+    -- BigWigs
+    if BigWigs3DB then
+        for profileName, profile in pairs(BigWigs3DB["namespaces"]["BigWigs_Plugins_Bars"]["profiles"]) do
+            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
+                profiles.bigWigs[profileName] = profile
+            end
+        end
+    end
+
+    -- BuffReminders
+    if BuffRemindersDB then
+        for profileName, profile in pairs(BuffRemindersDB["profiles"]) do
+            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
+                profiles.br[profileName] = profile
+            end
+        end
+    end
+
     -- ElvUI Base
     if ElvDB then
         for profileName, profile in pairs(ElvDB["profiles"]) do
@@ -81,15 +95,6 @@ function Tweaks:LoadProfiles()
                 else
                     profiles.elvPrivate.dps[profileName] = profile
                 end
-            end
-        end
-    end
-
-    -- BigWigs
-    if BigWigs3DB then
-        for profileName, profile in pairs(BigWigs3DB["namespaces"]["BigWigs_Plugins_Bars"]["profiles"]) do
-            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
-                profiles.bigWigs[profileName] = profile
             end
         end
     end
@@ -117,15 +122,6 @@ end
 
 function Tweaks:ApplyAtrocityEssentialsConfig()
     local config = LUI.db.global.atrocityUI
-    if config.aes.disableMissingBuffs then
-        for _, opt in pairs({ "Flask", "Food", "MHEnchant", "OHEnchant", "Poisons", "RaidBuffs", "Rune" }) do
-            SetValue(profiles.aes, format("MissingBuffs.Consumables.%s.Enabled", opt), false)
-        end
-    end
-
-    if config.aes.enableCombatCross then
-        SetValue(profiles.aes, "CombatCross.Enabled", true)
-    end
 
     if config.aes.disableAutomations then
         SetValue(profiles.aes, "Miscellaneous.Automation.AutoAcceptQuests", false)
@@ -133,30 +129,152 @@ function Tweaks:ApplyAtrocityEssentialsConfig()
         SetValue(profiles.aes, "Miscellaneous.Automation.HideTalkingHead", false)
     end
 
+    if config.aes.disableCopyAnything then
+        SetValue(profiles.aes, "Miscellaneous.CopyAnything.Enabled", false)
+    end
+
+    if config.aes.enableCombatCross then
+        SetValue(profiles.aes, "CombatCross.Enabled", true)
+    end
+
     -- LUI has its own hotkey for hiding its modified action bars using the mouseover state.
     SetValue(profiles.aes, "Miscellaneous.HideBars.Enabled", false)
 end
 
+function Tweaks:ApplyBigWigsConfig()
+    if not BigWigs3DB then return end
+
+    local config = LUI.db.global.atrocityUI
+
+    if config.fonts.resize then
+        SetValue(profiles.bigWigs, "fontSize", config.fonts.size)
+        SetValue(profiles.bigWigs, "fontSizeEmph", config.fonts.size)
+    end
+
+    if config.bigWigs then
+        local yPosition = -3
+        local width = 197
+
+        if config.elvUI.minimapDataTexts then
+            yPosition = yPosition - 22
+        end
+
+        if config.elvUI.minimap then
+            width = 263
+        end
+
+        SetValue(profiles.bigWigs, "normalPosition", { "TOPRIGHT", "BOTTOMRIGHT", 0, yPosition, "Minimap" })
+        SetValue(profiles.bigWigs, "normalWidth", width)
+        SetValue(profiles.bigWigs, "visibleBarLimit", 5)
+        SetValue(profiles.bigWigs, "visibleBarLimitEmph", 5)
+    end
+end
+
+function Tweaks:ApplyBuffRemindersConfig()
+    if not BuffReminders then return end
+
+    local config = LUI.db.global.atrocityUI
+
+    if config.buffReminders.smart then
+        SetValue(profiles.br, "BuffTrackingMode", "smart")
+    end
+end
+
 local SHARED_BAR_SETTINGS = {
+    ["backdrop"] = false,
+    ["buttonSpacing"] = 1,
     ["countFont"] = "Expressway",
     ["countFontOutline"] = "OUTLINE",
     ["countFontSize"] = 14,
-    ["countTextPosition"] = "BOTTOMRIGHT",
+    ["countTextPosition"] = "BOTTOM",
     ["countTextXOffset"] = 1,
-    ["countTextYOffset"] = 1,
+    ["countTextYOffset"] = 2,
     ["hotkeyFont"] = "Expressway",
     ["hotkeyFontOutline"] = "OUTLINE",
     ["hotkeyFontSize"] = 14,
-    ["hotkeyTextPosition"] = "TOPRIGHT",
+    ["hotkeyTextPosition"] = "TOP",
     ["hotkeyTextXOffset"] = 1,
-    ["hotkeyTextYOffset"] = -2,
+    ["hotkeyTextYOffset"] = -1,
     ["macroFont"] = "Expressway",
     ["macroFontOutline"] = "OUTLINE",
     ["macroFontSize"] = 14,
-    ["macroTextPosition"] = "BOTTOM",
-    ["macroTextXOffset"] = 0,
+    ["macroTextPosition"] = "CENTER",
+    ["macroTextXOffset"] = 1,
     ["macroTextYOffset"] = 0,
 }
+
+function Tweaks:ApplyDetailsConfig()
+    if not Details then return end
+
+    local config = LUI.db.global.atrocityUI
+
+    -- We don't do the normal SetValue stuff for Details, because if you modify *some* profile values (like tooltip)
+    -- without using the global "Details" table, the settings are not persisted.
+    for _, profile in ipairs(Details:GetProfileList()) do
+        if LUI:StartsWithIgnoreCase(profile, "atrocityui") then
+            local dtp = Details:GetProfile(profile)
+
+            -- Apply the profile first, so that references to Details below will resolve the correct profile.
+            Details:ApplyProfile(profile)
+
+            if LUI.db.global.scaleFactor then
+                dtp.options_window = { scale = LUI.db.global.scaleFactor }
+            end
+
+            if config.fonts.resize then
+                Details.tooltip.fontsize = config.fonts.size
+                Details.tooltip.fontsize_title = config.fonts.size
+                dtp.font_sizes = { menus = config.fonts.size }
+            end
+
+            Details:ReopenAllWindows()
+            for id, instance in Details:ListInstances() do
+                if config.fonts.resize then
+                    instance:SetBarTextSettings(config.fonts.size)
+                    instance:AttributeMenu(nil, nil, nil, nil, config.fonts.size)
+                end
+
+                if config.elvUI.panels then
+                    local position = instance:CreatePositionTable()
+
+                    position.w = config.elvUI.panelWidth / 2 - 2
+
+                    -- Main damage window
+                    if id == 1 then
+                        position.x = -config.elvUI.panelWidth / 2 - 4
+                        position.h = config.elvUI.panelHeight - 26
+                    end
+
+                    -- Healing window
+                    if id == 2 then
+                        position.y = 125
+                    end
+
+                    -- Deaths window
+                    if id == 3 then
+                        position.h = 99
+                    end
+
+                    instance:RestorePositionFromPositionTable(position)
+                end
+            end
+
+            -- Re-position tooltip for ultrawide
+            if config.details then
+                Details.tooltip.anchored_to = 2
+                Details.tooltip.anchor_point = "bottomright"
+                Details.tooltip.anchor_relative = "bottomright"
+                Details.tooltip.anchor_offset = { 0, -6 }
+
+                if config.elvUI.panels then
+                    Details.tooltip.anchor_screen_pos = { 1144, -710 }
+                end
+            end
+
+            Details:SaveProfile(profile)
+        end
+    end
+end
 
 function ApplySharedBarSettings(profile, bar)
     for setting, value in pairs(SHARED_BAR_SETTINGS) do
@@ -166,21 +284,16 @@ end
 
 local ACTION_BAR_SETTINGS = {
     ["bar1"] = {
-        ["backdrop"] = true,
-        ["buttonSize"] = 30,
-        ["buttonSpacing"] = 1,
+        ["buttonSize"] = 33,
         ["buttons"] = 12,
         ["buttonsPerRow"] = 12,
         ["enabled"] = true,
-        ["heightMult"] = 2,
         ["mouseover"] = true,
         ["point"] = "BOTTOMLEFT",
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar2"] = {
-        ["backdrop"] = true,
         ["buttonSize"] = 40,
-        ["buttonSpacing"] = 1,
         ["buttons"] = 6,
         ["buttonsPerRow"] = 6,
         ["enabled"] = true,
@@ -189,9 +302,7 @@ local ACTION_BAR_SETTINGS = {
         ["visibility"] = "[overridebar][vehicleui][possessbar][bonusbar:5] show; hide",
     },
     ["bar3"] = {
-        ["backdrop"] = true,
-        ["buttonSize"] = 28,
-        ["buttonSpacing"] = 1,
+        ["buttonSize"] = 33,
         ["buttons"] = 12,
         ["buttonsPerRow"] = 6,
         ["enabled"] = true,
@@ -200,21 +311,16 @@ local ACTION_BAR_SETTINGS = {
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar4"] = {
-        ["backdrop"] = false,
         ["buttonSize"] = 42,
-        ["buttonSpacing"] = 1,
         ["buttons"] = 12,
         ["buttonsPerRow"] = 1,
         ["enabled"] = true,
-        ["showGrid"] = false,
         ["mouseover"] = true,
         ["point"] = "BOTTOMLEFT",
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar5"] = {
-        ["backdrop"] = true,
-        ["buttonSize"] = 28,
-        ["buttonSpacing"] = 1,
+        ["buttonSize"] = 33,
         ["buttons"] = 12,
         ["buttonsPerRow"] = 6,
         ["enabled"] = true,
@@ -223,9 +329,7 @@ local ACTION_BAR_SETTINGS = {
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar6"] = {
-        ["backdrop"] = false,
-        ["buttonSize"] = 30,
-        ["buttonSpacing"] = 1,
+        ["buttonSize"] = 33,
         ["buttons"] = 12,
         ["buttonsPerRow"] = 12,
         ["enabled"] = true,
@@ -234,22 +338,19 @@ local ACTION_BAR_SETTINGS = {
         ["visibility"] = "[petbattle] hide; show",
     },
     ["bar13"] = {
-        ["backdrop"] = false,
         ["buttonSize"] = 42,
-        ["buttonSpacing"] = 1,
         ["buttonsPerRow"] = 2,
-        ["buttons"] = 12,
+        ["buttons"] = 10,
         ["enabled"] = true,
         ["mouseover"] = true,
-        ["showGrid"] = false,
         ["point"] = "BOTTOMLEFT",
         ["visibility"] = "[petbattle] hide; show",
     },
     ["barPet"] = {
-        ["backdrop"] = false,
         ["buttonSize"] = 42,
-        ["buttonSpacing"] = 1,
         ["buttonsPerRow"] = 2,
+        ["buttons"] = 10,
+        ["enabled"] = true,
         ["mouseover"] = true,
         ["point"] = "TOPLEFT",
         ["visibility"] = "[petbattle] hide; [novehicleui,pet,nooverridebar,nopossessbar] show; hide",
@@ -284,12 +385,12 @@ function ApplyElvUIBarConfig(profile)
     -- Movers
     SetValue(profile, "movers.ElvAB_1", "BOTTOM,ElvUIParent,BOTTOM,0.1,3")
     SetValue(profile, "movers.ElvAB_2", "BOTTOM,ElvUIParent,BOTTOM,0.1,245")
-    SetValue(profile, "movers.ElvAB_3", "BOTTOM,ElvUIParent,BOTTOM,-276,3")
+    SetValue(profile, "movers.ElvAB_3", "BOTTOM,ElvUIParent,BOTTOM,-305.1,3")
     SetValue(profile, "movers.ElvAB_4", "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-3,462")
-    SetValue(profile, "movers.ElvAB_5", "BOTTOM,ElvUIParent,BOTTOM,277,3")
-    SetValue(profile, "movers.ElvAB_6", "BOTTOM,ElvUIParent,BOTTOM,0,36")
+    SetValue(profile, "movers.ElvAB_5", "BOTTOM,ElvUIParent,BOTTOM,306.1,3")
+    SetValue(profile, "movers.ElvAB_6", "BOTTOM,ElvUIParent,BOTTOM,0.1,37")
 
-    local panelOffset = config.elvUI.panelWidth + 4
+    local panelOffset = (config.elvUI.panels and config.elvUI.panelWidth or 399) + 4
     SetValue(profile, "movers.ElvAB_13", format("BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,%d,3", panelOffset))
     SetValue(profile, "movers.PetAB", format("BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-%d,3", panelOffset))
 end
@@ -634,7 +735,16 @@ function Tweaks:ApplyElvUIConfig()
         SetValue(profiles.elv.dps, "movers.TooltipMover", TooltipMover)
         SetValue(profiles.elv.healer, "movers.TooltipMover", TooltipMover)
 
-        local RaidMover = format("BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,3,%d", config.elvUI.panelHeight + 23)
+        local DTPanelBugsMover = format("BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,%d,%d",
+            config.elvUI.panelWidth - 21,
+            config.elvUI.panelHeight - 19)
+        SetValue(profiles.elv.dps, "movers.DTPanelBugsMover", DTPanelBugsMover)
+        SetValue(profiles.elv.healer, "movers.DTPanelBugsMover", DTPanelBugsMover)
+    end
+
+    if config.elvUI.lowerLeftRaidFrames then
+        local height = (config.elvUI.panels and config.elvUI.panelHeight or 214) + 23
+        local RaidMover = format("BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,3,%d", height)
         SetValue(profiles.elv.dps, "movers.ElvUF_Raid1Mover", RaidMover)
         SetValue(profiles.elv.dps, "movers.ElvUF_Raid2Mover", RaidMover)
         SetValue(profiles.elv.dps, "movers.ElvUF_Raid3Mover", RaidMover)
@@ -668,108 +778,6 @@ function Tweaks:ApplyElvUIConfig()
         SetValue(profiles.elv.healer, "ElvUI_Anchor.focusRelative", "RIGHT")
         SetValue(profiles.elv.healer, "ElvUI_Anchor.focusX", 65)
         SetValue(profiles.elv.healer, "ElvUI_Anchor.focusY", 37)
-    end
-end
-
-function Tweaks:ApplyBigWigsConfig()
-    if not BigWigs3DB then return end
-
-    local config = LUI.db.global.atrocityUI
-
-    if config.fonts.resize then
-        SetValue(profiles.bigWigs, "fontSize", config.fonts.size)
-        SetValue(profiles.bigWigs, "fontSizeEmph", config.fonts.size)
-    end
-
-    if config.bigWigs then
-        local yPosition = -3
-        local width = 197
-
-        if config.elvUI.minimapDataTexts then
-            yPosition = yPosition - 22
-        end
-
-        if config.elvUI.minimap then
-            width = 263
-        end
-
-        SetValue(profiles.bigWigs, "normalPosition", { "TOPRIGHT", "BOTTOMRIGHT", 0, yPosition, "Minimap" })
-        SetValue(profiles.bigWigs, "normalWidth", width)
-        SetValue(profiles.bigWigs, "visibleBarLimit", 5)
-        SetValue(profiles.bigWigs, "visibleBarLimitEmph", 5)
-    end
-end
-
-function Tweaks:ApplyDetailsConfig()
-    if not Details then return end
-
-    local config = LUI.db.global.atrocityUI
-
-    -- We don't do the normal SetValue stuff for Details, because if you modify *some* profile values (like tooltip)
-    -- without using the global "Details" table, the settings are not persisted.
-    for _, profile in ipairs(Details:GetProfileList()) do
-        if LUI:StartsWithIgnoreCase(profile, "atrocityui") then
-            local dtp = Details:GetProfile(profile)
-
-            -- Apply the profile first, so that references to Details below will resolve the correct profile.
-            Details:ApplyProfile(profile)
-
-            if LUI.db.global.scaleFactor then
-                dtp.options_window = { scale = LUI.db.global.scaleFactor }
-            end
-
-            if config.fonts.resize then
-                Details.tooltip.fontsize = config.fonts.size
-                Details.tooltip.fontsize_title = config.fonts.size
-                dtp.font_sizes = { menus = config.fonts.size }
-            end
-
-            Details:ReopenAllWindows()
-            for id, instance in Details:ListInstances() do
-                if config.fonts.resize then
-                    instance:SetBarTextSettings(config.fonts.size)
-                    instance:AttributeMenu(nil, nil, nil, nil, config.fonts.size)
-                end
-
-                if config.elvUI.panels then
-                    local position = instance:CreatePositionTable()
-
-                    position.w = config.elvUI.panelWidth / 2 - 2
-
-                    -- Main damage window
-                    if id == 1 then
-                        position.x = -config.elvUI.panelWidth / 2 - 4
-                        position.h = config.elvUI.panelHeight - 26
-                    end
-
-                    -- Healing window
-                    if id == 2 then
-                        position.y = 125
-                    end
-
-                    -- Deaths window
-                    if id == 3 then
-                        position.h = 99
-                    end
-
-                    instance:RestorePositionFromPositionTable(position)
-                end
-            end
-
-            -- Re-position tooltip for ultrawide
-            if config.details then
-                Details.tooltip.anchored_to = 2
-                Details.tooltip.anchor_point = "bottomright"
-                Details.tooltip.anchor_relative = "bottomright"
-                Details.tooltip.anchor_offset = { 0, -6 }
-
-                if config.elvUI.panels then
-                    Details.tooltip.anchor_screen_pos = { 1144, -710 }
-                end
-            end
-
-            Details:SaveProfile(profile)
-        end
     end
 end
 
@@ -830,6 +838,20 @@ function Tweaks:ApplyPlaterConfig()
     Plater.RefreshDBUpvalues()
     Plater.UpdateAllPlates()
     Plater.RefreshAutoToggle()
+end
+
+function Tweaks:ApplyTimelineRemindersConfig()
+    if not TimelineReminders or not LiquidRemindersSaved or not LUI.db.global.atrocityUI.timelineReminders.enabled then return end
+
+    local frameSettings = LiquidRemindersSaved.LiquidUI.frameSettings
+    SetValue(frameSettings.BAR_ANCHOR.points, "offsetX", -400)
+    SetValue(frameSettings.BAR_ANCHOR.points, "offsetY", 121)
+    SetValue(frameSettings.CIRCLE_ANCHOR.points, "offsetX", 0)
+    SetValue(frameSettings.CIRCLE_ANCHOR.points, "offsetY", -80)
+    SetValue(frameSettings.ICON_ANCHOR.points, "offsetX", 400)
+    SetValue(frameSettings.ICON_ANCHOR.points, "offsetY", 121)
+    SetValue(frameSettings.TEXT_ANCHOR.points, "offsetX", 0)
+    SetValue(frameSettings.TEXT_ANCHOR.points, "offsetY", 350)
 end
 
 function Tweaks:ApplyWarpDepleteConfig()
@@ -1044,10 +1066,12 @@ end
 
 function Tweaks:ApplyAUIConfig()
     self:ApplyAtrocityEssentialsConfig()
-    self:ApplyElvUIConfig()
     self:ApplyBigWigsConfig()
+    self:ApplyBuffRemindersConfig()
     self:ApplyDetailsConfig()
+    self:ApplyElvUIConfig()
     self:ApplyPlaterConfig()
+    self:ApplyTimelineRemindersConfig()
     self:ApplyWarpDepleteConfig()
 
     ReloadUI()
