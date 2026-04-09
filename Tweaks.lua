@@ -856,17 +856,56 @@ function Tweaks:ApplyPlaterConfig()
 end
 
 function Tweaks:ApplyTimelineRemindersConfig()
-    if not TimelineReminders or not LiquidRemindersSaved or not LUI.db.global.atrocityUI.timelineReminders.enabled then return end
+    if not LiquidRemindersSaved then return end
 
-    local frameSettings = LiquidRemindersSaved.LiquidUI.frameSettings
-    SetValue(frameSettings.BAR_ANCHOR.points, "offsetX", -400)
-    SetValue(frameSettings.BAR_ANCHOR.points, "offsetY", 121)
-    SetValue(frameSettings.CIRCLE_ANCHOR.points, "offsetX", 0)
-    SetValue(frameSettings.CIRCLE_ANCHOR.points, "offsetY", -80)
-    SetValue(frameSettings.ICON_ANCHOR.points, "offsetX", 400)
-    SetValue(frameSettings.ICON_ANCHOR.points, "offsetY", 121)
-    SetValue(frameSettings.TEXT_ANCHOR.points, "offsetX", 0)
-    SetValue(frameSettings.TEXT_ANCHOR.points, "offsetY", 350)
+    local config = LUI.db.global.atrocityUI
+
+    if config.timelineReminders.enabled then
+        local frameSettings = LiquidRemindersSaved.LiquidUI.frameSettings
+        local settings = LiquidRemindersSaved.settings
+
+        frameSettings.BAR_ANCHOR.points = {
+            [1] = {
+                offsetX = -400,
+                offsetY = 121,
+                point = "CENTER",
+                relativePoint = "CENTER",
+            }
+        }
+        settings.anchors.BAR.alignment = "RIGHT"
+        settings.anchors.BAR.grow = "UP"
+
+        frameSettings.CIRCLE_ANCHOR.points = {
+            [1] = {
+                offsetX = 0,
+                offsetY = -80,
+                point = "CENTER",
+                relativePoint = "CENTER",
+            }
+        }
+
+        frameSettings.ICON_ANCHOR.points = {
+            [1] = {
+                offsetX = 400,
+                offsetY = 121,
+                point = "CENTER",
+                relativePoint = "CENTER",
+            }
+        }
+        settings.anchors.ICON.alignment = "LEFT"
+        settings.anchors.ICON.grow = "UP"
+
+        frameSettings.TEXT_ANCHOR.points = {
+            [1] = {
+                offsetX = 0,
+                offsetY = 350,
+                point = "CENTER",
+                relativePoint = "CENTER",
+            }
+        }
+        settings.anchors.TEXT.alignment = "CENTER"
+        settings.anchors.TEXT.grow = "UP"
+    end
 end
 
 function Tweaks:ApplyWarpDepleteConfig()

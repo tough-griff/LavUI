@@ -476,6 +476,7 @@ function LUI:GetOptions()
                         type = "group",
                         name = "TimelineReminders Tweaks",
                         inline = true,
+                        disabled = function() return not TimelineReminders or not LiquidRemindersSaved end,
                         args = {
                             enabled = {
                                 name = "Set anchors?",
