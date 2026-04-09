@@ -591,8 +591,8 @@ function Tweaks:ApplyElvUIConfig()
     end
 
     if config.elvUI.tooltip then
-        SetValue(profiles.elv.dps, "tooltip.modifierID", "SHIFT")
-        SetValue(profiles.elv.healer, "tooltip.modifierID", "SHIFT")
+        SetValue(profiles.elv.dps, "tooltip.modifierID", "SHOW")
+        SetValue(profiles.elv.healer, "tooltip.modifierID", "SHOW")
 
         SetValue(profiles.elv.dps, "tooltip.itemCount", "NONE")
         SetValue(profiles.elv.healer, "tooltip.itemCount", "NONE")
@@ -624,18 +624,30 @@ function Tweaks:ApplyElvUIConfig()
 
     SetValue(profiles.elv.dps, "unitframe.units.raid1.roleIcon.enable", true)
     SetValue(profiles.elv.dps, "unitframe.units.raid1.roleIcon.damager", false)
+    SetValue(profiles.elv.dps, "unitframe.units.raid1.raidRoleIcons.enable", true)
     SetValue(profiles.elv.healer, "unitframe.units.raid1.roleIcon.enable", true)
     SetValue(profiles.elv.healer, "unitframe.units.raid1.roleIcon.damager", false)
+    SetValue(profiles.elv.healer, "unitframe.units.raid1.raidRoleIcons.enable", true)
 
     SetValue(profiles.elv.dps, "unitframe.units.raid2.roleIcon.enable", true)
     SetValue(profiles.elv.dps, "unitframe.units.raid2.roleIcon.damager", false)
+    SetValue(profiles.elv.dps, "unitframe.units.raid2.raidRoleIcons.enable", true)
     SetValue(profiles.elv.healer, "unitframe.units.raid2.roleIcon.enable", true)
     SetValue(profiles.elv.healer, "unitframe.units.raid2.roleIcon.damager", false)
+    SetValue(profiles.elv.healer, "unitframe.units.raid2.raidRoleIcons.enable", true)
 
     SetValue(profiles.elv.dps, "unitframe.units.raid3.roleIcon.enable", true)
     SetValue(profiles.elv.dps, "unitframe.units.raid3.roleIcon.damager", false)
+    SetValue(profiles.elv.dps, "unitframe.units.raid3.raidRoleIcons.enable", true)
     SetValue(profiles.elv.healer, "unitframe.units.raid3.roleIcon.enable", true)
     SetValue(profiles.elv.healer, "unitframe.units.raid3.roleIcon.damager", false)
+    SetValue(profiles.elv.healer, "unitframe.units.raid3.raidRoleIcons.enable", true)
+
+    if config.elvUI.lowerLeftRaidFrames then
+        SetValue(profiles.elv.dps, "unitframe.units.raid1.growthDirection", "RIGHT_UP")
+        SetValue(profiles.elv.dps, "unitframe.units.raid2.growthDirection", "RIGHT_UP")
+        SetValue(profiles.elv.dps, "unitframe.units.raid3.growthDirection", "RIGHT_UP")
+    end
 
     -- Auto repairs
     if not config.elvUI.guildRepairs then
@@ -834,6 +846,9 @@ function Tweaks:ApplyPlaterConfig()
     if config.plater.biggerMark then
         SetValue(profiles.plater, "indicator_raidmark_scale", 1.5)
     end
+
+    -- Enable Interact Key
+    C_CVar.SetCVar("SoftTargetInteract", 3)
 
     Plater.RefreshDBUpvalues()
     Plater.UpdateAllPlates()

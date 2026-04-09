@@ -349,7 +349,7 @@ function LUI:GetOptions()
                             },
                             tooltip = {
                                 name = "Tooltip tweaks?",
-                                desc = "Should we disable item count?",
+                                desc = "Should we disable item count and always show spell IDs?",
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.elvUI.tooltip end,
                                 set = function(_, val) self.db.global.atrocityUI.elvUI.tooltip = val end,
