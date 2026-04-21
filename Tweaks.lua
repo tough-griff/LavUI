@@ -603,8 +603,6 @@ function Tweaks:ApplyElvUIConfig()
         SetValue(profiles.elv.dps, "unitframe.fontSize", config.fonts.size)
         SetValue(profiles.elv.healer, "unitframe.fontSize", config.fonts.size)
 
-        SetValue(profiles.elv.dps, "unitframe.units.party.raidRoleIcons.xOffset", -27)
-
         SetValue(profiles.elv.dps, "unitframe.units.raid1.buffs.countFontSize", diminishedFontSize)
         SetValue(profiles.elv.healer, "unitframe.units.raid1.buffs.countFontSize", diminishedFontSize)
 

@@ -1,4 +1,4 @@
-## Interface: 120000, 120001
+## Interface: 120005
 ## Title: |cffffccffLavUI|r
 ## Version: @project-version@
 ## Notes: Lav's UI Utilities
