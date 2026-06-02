@@ -23,28 +23,29 @@ end
 ---@param sessionType number 0 = overall, 1 = current, 2 = expired
 ---@param attributeId number
 ---@param subAttributeId number
----@param titleOverride? string
-local function SetupDetailsInstance(id, sessionType, attributeId, subAttributeId, titleOverride)
+local function SetupDetailsInstance(id, sessionType, attributeId, subAttributeId)
     local instance = Details:GetInstance(id)
     if not instance then return end
+
+    local wasShown = instance:IsShown()
+    instance:ShowWindow()
 
     instance:SetSegmentType(sessionType, true)
     instance:SetDisplay(nil, attributeId, subAttributeId)
 
-    if titleOverride and instance.menu_attribute_string then
-        instance.menu_attribute_string:SetText(titleOverride)
+    if not wasShown then
+        instance:HideWindow()
     end
 end
 
----@param zoneType? string
-function LUI:SetDetailsSegments(zoneType)
-    if not zoneType then zoneType = Details.zone_type or "none" end
+function LUI:SetDetailsSegments()
+    local _, instanceType = GetInstanceInfo()
 
-    if zoneType == "party" then
+    if instanceType == "party" or instanceType == "scenario" then
         SetupDetailsInstance(1, 1, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGEDONE)
-        SetupDetailsInstance(2, 0, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGEDONE, "Damage Done Overall")
+        SetupDetailsInstance(2, 0, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGEDONE)
         SetupDetailsInstance(3, 1, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HEALDONE)
-    elseif zoneType == "raid" then
+    elseif instanceType == "raid" then
         SetupDetailsInstance(1, 1, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGEDONE)
         SetupDetailsInstance(2, 1, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HEALDONE)
         SetupDetailsInstance(3, 1, DETAILS_ATTRIBUTE_MISC, DETAILS_SUBATTRIBUTE_DEATH)

@@ -7,6 +7,7 @@ function LUI:GetDefaults()
         global = {
             scaleEnabled = false,
             scaleFactor = 1.20,
+            hideLootRolls = false,
             atrocityUI = {
                 fonts = {
                     resize = false,
@@ -61,6 +62,8 @@ function LUI:GetDefaults()
 end
 
 function LUI:GetOptions()
+    ---@class HideLootRolls
+    local HideLootRolls = self:GetModule("HideLootRolls")
     ---@class Scaling
     local Scaling = self:GetModule("Scaling")
     ---@class Tweaks
@@ -104,7 +107,7 @@ function LUI:GetOptions()
                 name = "General Tweaks",
                 type = "group",
                 args = {
-                    settings = {
+                    scaling = {
                         order = 10,
                         type = "group",
                         name = "Scaling",
@@ -144,6 +147,18 @@ function LUI:GetOptions()
                                 width = "full"
                             },
                         },
+                    },
+                    hideLootRolls = {
+                        order = 20,
+                        name = "Autohide Loot Roll window",
+                        desc = "Automatically hide the loot roll frame after 60 seconds.",
+                        type = "toggle",
+                        get = function() return self.db.global.hideLootRolls end,
+                        set = function(_, val)
+                            self.db.global.hideLootRolls = val
+                            if val then HideLootRolls:Enable() else HideLootRolls:Disable() end
+                        end,
+                        width = "full",
                     },
                 },
             },

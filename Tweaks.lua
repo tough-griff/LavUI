@@ -596,6 +596,24 @@ function Tweaks:ApplyElvUIConfig()
 
         SetValue(profiles.elv.dps, "tooltip.itemCount", "NONE")
         SetValue(profiles.elv.healer, "tooltip.itemCount", "NONE")
+
+        SetValue(profiles.elv.dps, "tooltip.mythicDataEnable", true)
+        SetValue(profiles.elv.healer, "tooltip.mythicDataEnable", true)
+
+        SetValue(profiles.elv.dps, "tooltip.dungeonScore", true)
+        SetValue(profiles.elv.healer, "tooltip.dungeonScore", true)
+
+        SetValue(profiles.elv.dps, "tooltip.mythicBestRun", true)
+        SetValue(profiles.elv.healer, "tooltip.mythicBestRun", true)
+
+        SetValue(profiles.elv.dps, "tooltip.dungeonScoreColor", true)
+        SetValue(profiles.elv.healer, "tooltip.dungeonScoreColor", true)
+
+        SetValue(profiles.elvPrivate.dps, "WT.tooltips.elvUITweaks.betterMythicPlusInfo.enable", true)
+        SetValue(profiles.elvPrivate.healer, "WT.tooltips.elvUITweaks.betterMythicPlusInfo.enable", true)
+
+        SetValue(profiles.elvPrivate.dps, "WT.tooltips.elvUITweaks.betterMythicPlusInfo.icon.enable", false)
+        SetValue(profiles.elvPrivate.healer, "WT.tooltips.elvUITweaks.betterMythicPlusInfo.icon.enable", false)
     end
 
     if config.fonts.resize then
@@ -703,6 +721,22 @@ function Tweaks:ApplyElvUIConfig()
         end
     end
 
+    -- WindTools tweaks
+    SetValue(profiles.elv.dps, "WT.item.alreadyKnown.enable", true)
+    SetValue(profiles.elv.healer, "WT.item.alreadyKnown.enable", true)
+
+    local sortingPriority = "_BugSack"
+    SetValue(profiles.elvPrivate.dps, "WT.maps.minimapButtons.sortingPriority", sortingPriority)
+    SetValue(profiles.elvPrivate.healer, "WT.maps.minimapButtons.sortingPriority", sortingPriority)
+
+    local hiddenPatterns = "_Plater,_SimpleAddonManager,_NSRT,_atrocityEssentials,_Clicked,_SimulationCraft,_MythicDungeonTools,_BigWigs"
+    SetValue(profiles.elvPrivate.dps, "WT.maps.minimapButtons.hiddenPatterns", hiddenPatterns)
+    SetValue(profiles.elvPrivate.healer, "WT.maps.minimapButtons.hiddenPatterns", hiddenPatterns)
+
+    local ignorePatterns = "^Plumber"
+    SetValue(profiles.elvPrivate.dps, "WT.maps.minimapButtons.ignorePatterns", ignorePatterns)
+    SetValue(profiles.elvPrivate.healer, "WT.maps.minimapButtons.ignorePatterns", ignorePatterns)
+
     -- Movers
     if config.elvUI.minimap then
         SetValue(profiles.elv.dps, "movers.BNETMover", "TOPRIGHT,ElvUIParent,TOPRIGHT,-3,-290")
@@ -723,6 +757,9 @@ function Tweaks:ApplyElvUIConfig()
 
     SetValue(profiles.elv.dps, "movers.WTMinimapButtonBarAnchor", "BOTTOMLEFT,Minimap,BOTTOMLEFT,3,3")
     SetValue(profiles.elv.healer, "movers.WTMinimapButtonBarAnchor", "BOTTOMLEFT,Minimap,BOTTOMLEFT,3,3")
+
+    SetValue(profiles.elv.dps, "movers.WTInstanceDifficultyFrameMover", "TOPLEFT,Minimap,TOPLEFT,3,-3")
+    SetValue(profiles.elv.healer, "movers.WTInstanceDifficultyFrameMover", "TOPLEFT,Minimap,TOPLEFT,3,-3")
 
     if config.elvUI.panels then
         local PetAB = format("BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,%d,3", -config.elvUI.panelWidth - 4)
@@ -775,19 +812,8 @@ function Tweaks:ApplyElvUIConfig()
 
         SetValue(profiles.elv.dps, "movers.ElvUF_PartyMover", "BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,965,535")
 
-        -- Anchor focus frame to target frame
-        SetValue(profiles.elv.dps, "ElvUI_Anchor.focusEnabled", true)
-        SetValue(profiles.elv.dps, "ElvUI_Anchor.focusParent", "ElvUF_Target")
-        SetValue(profiles.elv.dps, "ElvUI_Anchor.focusPoint", "LEFT")
-        SetValue(profiles.elv.dps, "ElvUI_Anchor.focusRelative", "RIGHT")
-        SetValue(profiles.elv.dps, "ElvUI_Anchor.focusX", 65)
-        SetValue(profiles.elv.dps, "ElvUI_Anchor.focusY", 37)
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusEnabled", true)
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusParent", "ElvUF_Target")
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusPoint", "LEFT")
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusRelative", "RIGHT")
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusX", 65)
-        SetValue(profiles.elv.healer, "ElvUI_Anchor.focusY", 37)
+        SetValue(profiles.elv.dps, "movers.ElvUF_FocusMover", "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-965,535")
+        SetValue(profiles.elv.healer, "movers.ElvUF_FocusMover", "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-965,535")
     end
 end
 

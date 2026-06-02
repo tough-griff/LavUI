@@ -17,5 +17,8 @@ Utils.lua
 Options.lua
 Bindings.lua
 Commands.lua
+
+# Modules
+HideLootRolls.lua
 Scaling.lua
 Tweaks.lua
