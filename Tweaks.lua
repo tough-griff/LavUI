@@ -5,7 +5,7 @@ local Tweaks = LUI:NewModule("Tweaks", "AceHook-3.0")
 
 Tweaks.profiles = {
     aes = {},
-    bigWigs = {},
+    bigWigs = { bars = {}, mplus = {} },
     br = {},
     elv = { dps = {}, healer = {} },
     elvPrivate = { dps = {}, healer = {} },
@@ -59,7 +59,13 @@ function Tweaks:LoadProfiles()
     if BigWigs3DB then
         for profileName, profile in pairs(BigWigs3DB["namespaces"]["BigWigs_Plugins_Bars"]["profiles"]) do
             if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
-                profiles.bigWigs[profileName] = profile
+                profiles.bigWigs.bars[profileName] = profile
+            end
+        end
+
+        for profileName, profile in pairs(BigWigs3DB["namespaces"]["MythicPlus"]["profiles"]) do
+            if LUI:StartsWithIgnoreCase(profileName, "atrocityui") then
+                profiles.bigWigs.mplus[profileName] = profile
             end
         end
     end
@@ -124,17 +130,11 @@ function Tweaks:ApplyAtrocityEssentialsConfig()
     local config = LUI.db.global.atrocityUI
 
     if config.aes.disableAutomations then
-        SetValue(profiles.aes, "Miscellaneous.Automation.AutoAcceptQuests", false)
-        SetValue(profiles.aes, "Miscellaneous.Automation.AutoTurnInQuests", false)
         SetValue(profiles.aes, "Miscellaneous.Automation.HideTalkingHead", false)
     end
 
     if config.aes.disableCopyAnything then
         SetValue(profiles.aes, "Miscellaneous.CopyAnything.Enabled", false)
-    end
-
-    if config.aes.enableCombatCross then
-        SetValue(profiles.aes, "CombatCross.Enabled", true)
     end
 
     -- LUI has its own hotkey for hiding its modified action bars using the mouseover state.
@@ -147,8 +147,8 @@ function Tweaks:ApplyBigWigsConfig()
     local config = LUI.db.global.atrocityUI
 
     if config.fonts.resize then
-        SetValue(profiles.bigWigs, "fontSize", config.fonts.size)
-        SetValue(profiles.bigWigs, "fontSizeEmph", config.fonts.size)
+        SetValue(profiles.bigWigs.bars, "fontSize", config.fonts.size)
+        SetValue(profiles.bigWigs.bars, "fontSizeEmph", config.fonts.size)
     end
 
     if config.bigWigs then
@@ -163,10 +163,14 @@ function Tweaks:ApplyBigWigsConfig()
             width = 263
         end
 
-        SetValue(profiles.bigWigs, "normalPosition", { "TOPRIGHT", "BOTTOMRIGHT", 0, yPosition, "Minimap" })
-        SetValue(profiles.bigWigs, "normalWidth", width)
-        SetValue(profiles.bigWigs, "visibleBarLimit", 5)
-        SetValue(profiles.bigWigs, "visibleBarLimitEmph", 5)
+        SetValue(profiles.bigWigs.bars, "normalPosition", { "TOPRIGHT", "BOTTOMRIGHT", 0, yPosition, "Minimap" })
+        SetValue(profiles.bigWigs.bars, "normalWidth", width)
+        SetValue(profiles.bigWigs.bars, "visibleBarLimit", 5)
+        SetValue(profiles.bigWigs.bars, "visibleBarLimitEmph", 5)
+    end
+
+    if config.elvUI.unitFrames then
+        SetValue(profiles.bigWigs.mplus, "instanceKeysPosition", { "CENTER", "CENTER", -425, 20 })
     end
 end
 
@@ -176,7 +180,7 @@ function Tweaks:ApplyBuffRemindersConfig()
     local config = LUI.db.global.atrocityUI
 
     if config.buffReminders.smart then
-        SetValue(profiles.br, "BuffTrackingMode", "smart")
+        SetValue(profiles.br, "buffTrackingMode", "smart")
     end
 end
 
@@ -274,6 +278,33 @@ function Tweaks:ApplyDetailsConfig()
             Details:SaveProfile(profile)
         end
     end
+end
+
+function Tweaks:ApplyEditMode()
+    local config = LUI.db.global.atrocityUI
+    if not config.editMode then return end
+
+    local layoutsInfo = C_EditMode.GetLayouts()
+    if not layoutsInfo or not layoutsInfo.layouts then return end
+
+    for _, layout in ipairs(layoutsInfo.layouts) do
+        if LUI:StartsWithIgnoreCase(layout.layoutName, "atrocityui") then
+            for _, systemInfo in ipairs(layout.systems) do
+                if systemInfo.system == Enum.EditModeSystem.ObjectiveTracker then
+                    systemInfo.anchorInfo.relativeTo = "MinimapCluster"
+                    systemInfo.anchorInfo.point = "TOPRIGHT"
+                    systemInfo.anchorInfo.relativePoint = "BOTTOMRIGHT"
+                    systemInfo.anchorInfo.offsetX = 0
+                    systemInfo.anchorInfo.offsetY = -4
+
+                    -- [When not in default position] Height, 0 through 60, "400 + (num x 10)"
+                    systemInfo.settings[1].value = 37
+                end
+            end
+        end
+    end
+
+    C_EditMode.SaveLayouts(layoutsInfo)
 end
 
 function ApplySharedBarSettings(profile, bar)
@@ -1147,6 +1178,7 @@ function Tweaks:ApplyAUIConfig()
     self:ApplyBigWigsConfig()
     self:ApplyBuffRemindersConfig()
     self:ApplyDetailsConfig()
+    self:ApplyEditMode()
     self:ApplyElvUIConfig()
     self:ApplyPlaterConfig()
     self:ApplyTimelineRemindersConfig()

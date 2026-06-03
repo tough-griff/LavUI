@@ -9,6 +9,7 @@ function LUI:GetDefaults()
             scaleFactor = 1.20,
             hideLootRolls = false,
             atrocityUI = {
+                editMode = false,
                 fonts = {
                     resize = false,
                     size = 16,
@@ -48,7 +49,6 @@ function LUI:GetDefaults()
                 aes = {
                     disableAutomations = false,
                     disableCopyAnything = false,
-                    enableCombatCross = false,
                 },
                 buffReminders = {
                     smart = false,
@@ -209,6 +209,13 @@ function LUI:GetOptions()
                                 type = "toggle",
                                 get = function() return self.db.global.atrocityUI.details end,
                                 set = function(_, val) self.db.global.atrocityUI.details = val end,
+                            },
+                            editMode = {
+                                name = "Edit Mode Tweaks?",
+                                desc = "Adjusts the edit mode layout for ultrawide.",
+                                type = "toggle",
+                                get = function() return self.db.global.atrocityUI.editMode end,
+                                set = function(_, val) self.db.global.atrocityUI.editMode = val end,
                             },
                         },
                     },
@@ -460,14 +467,6 @@ function LUI:GetOptions()
                                 get = function() return self.db.global.atrocityUI.aes.disableCopyAnything end,
                                 set = function(_, val) self.db.global.atrocityUI.aes.disableCopyAnything = val end,
                             },
-                            enableCombatCross = {
-                                name = "Enable combat cross?",
-                                desc = "Should we enable the combat cross?",
-                                type = "toggle",
-                                get = function() return self.db.global.atrocityUI.aes.enableCombatCross end,
-                                set = function(_, val) self.db.global.atrocityUI.aes.enableCombatCross = val end,
-                            },
-
                         },
                     },
                     buffReminders = {
