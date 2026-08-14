@@ -101,18 +101,24 @@ end
 -- The options dropdown and the seating path ask this same question, so the
 -- list can never offer something that then refuses to seat.
 --
--- Nothing here tests a window by NAME. "General", "Log" and "Voice" are
--- localised, and their frame indices are only Blizzard's defaults -- what
--- actually disqualifies them is structural, and holds on any client:
+-- Nothing tests a window by NAME -- "General", "Log" and "Voice" are
+-- localised. Most of the rules below are structural and hold on any client;
+-- the first one is not, and is called out as the assumption it is:
 --
---   ChatFrame1  is the dock primary. AES anchors GeneralDockManager into its
---               own panel, and the dock is a game singleton.
+--   Slots 1-3   are Blizzard's own: General, the combat log and Voice.
+--               Everything the user creates starts at 4. This is a LAYOUT
+--               assumption rather than a test -- Voice in particular reports
+--               nothing that separates it from a user window: not docked, not
+--               temporary, no flag of its own. If Blizzard ever ships a
+--               fourth default this needs revisiting.
 --   Combat log  carries its own quick-button bar and is excluded from AES
---               styling outright, so it needs geometry we do not write.
---   Voice, and  are TEMPORARY windows. The game creates and closes them on
---   whispers    its own schedule, so seating one is a panel that empties
---               itself without warning.
+--               styling outright, so it needs geometry we do not write. Kept
+--               as its own test in case it is ever not slot 2.
+--   Temporary   whisper and BN tabs. The game opens and closes them on its
+--               own schedule, so seating one is a panel that empties itself.
 --   Docked      belongs to the dock, not to us. Undock it and it appears.
+local RESERVED_WINDOWS = 3
+
 ---@param chat Frame?
 ---@return boolean seatable
 ---@return string? reason
@@ -120,7 +126,7 @@ function ChatPanel:IsSeatable(chat)
     if not chat then return false, "that window does not exist" end
 
     local id = chat:GetID()
-    if id == 1 then return false, "the General window belongs to the chat dock" end
+    if id <= RESERVED_WINDOWS then return false, "Blizzard's own windows cannot be seated" end
     if IsCombatLog and IsCombatLog(chat) then return false, "the combat log is not supported" end
     if chat.isTemporary then return false, format("ChatFrame%d is a temporary window", id) end
     if chat.isDocked then return false, format("ChatFrame%d is docked -- undock it first", id) end
