@@ -12,7 +12,11 @@ function LUI:GetDefaults()
             -- only things worth saving are which window we seat and where.
             chatPanel = {
                 enabled = false,
-                frameID = 3,
+                -- No default window on purpose. Blizzard's first three -- the
+                -- dock primary, the combat log and Voice -- are all unseatable,
+                -- and which index holds a usable window is up to the user's own
+                -- layout. Unset reads as "no chat window selected" until picked.
+                frameID = nil,
                 anchorFrom = "BOTTOMRIGHT",
                 anchorTo = "BOTTOMRIGHT",
                 xOffset = -1,
@@ -185,6 +189,9 @@ function LUI:GetOptions()
                                 name = "Gives an undocked chat window the same panel treatment " ..
                                     "AtrocityEssentials gives its own: matching size, matching backdrop " ..
                                     "and the active-tab styling its docked tab gets.\n\n" ..
+                                    "Only undocked windows can be seated, so the list below is empty " ..
+                                    "until you right-click a chat tab and undock it. General, the " ..
+                                    "combat log and Voice never appear.\n\n" ..
                                     "Size and colours are read from AtrocityEssentials directly, so " ..
                                     "there is nothing here to keep in sync. Drag it with the " ..
                                     "EllesmereUI mover.\n",
@@ -210,10 +217,13 @@ function LUI:GetOptions()
                                 type = "select",
                                 disabled = function() return not self.db.global.chatPanel.enabled end,
                                 values = function()
+                                    -- Only what can actually be seated, so the
+                                    -- list cannot offer something that then
+                                    -- refuses. Rules live on the module.
                                     local windows = {}
                                     for i = 1, NUM_CHAT_WINDOWS do
                                         local name = GetChatWindowInfo(i)
-                                        if name and name ~= "" then
+                                        if name and name ~= "" and ChatPanel:IsSeatable(_G["ChatFrame" .. i]) then
                                             windows[i] = format("%d. %s", i, name)
                                         end
                                     end

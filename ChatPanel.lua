@@ -96,19 +96,51 @@ function ChatPanel:IsClaimedByAES(chat)
     return false
 end
 
+-- WHAT CAN GO IN THE PANEL
+--
+-- The options dropdown and the seating path ask this same question, so the
+-- list can never offer something that then refuses to seat.
+--
+-- Nothing here tests a window by NAME. "General", "Log" and "Voice" are
+-- localised, and their frame indices are only Blizzard's defaults -- what
+-- actually disqualifies them is structural, and holds on any client:
+--
+--   ChatFrame1  is the dock primary. AES anchors GeneralDockManager into its
+--               own panel, and the dock is a game singleton.
+--   Combat log  carries its own quick-button bar and is excluded from AES
+--               styling outright, so it needs geometry we do not write.
+--   Voice, and  are TEMPORARY windows. The game creates and closes them on
+--   whispers    its own schedule, so seating one is a panel that empties
+--               itself without warning.
+--   Docked      belongs to the dock, not to us. Undock it and it appears.
+---@param chat Frame?
+---@return boolean seatable
+---@return string? reason
+function ChatPanel:IsSeatable(chat)
+    if not chat then return false, "that window does not exist" end
+
+    local id = chat:GetID()
+    if id == 1 then return false, "the General window belongs to the chat dock" end
+    if IsCombatLog and IsCombatLog(chat) then return false, "the combat log is not supported" end
+    if chat.isTemporary then return false, format("ChatFrame%d is a temporary window", id) end
+    if chat.isDocked then return false, format("ChatFrame%d is docked -- undock it first", id) end
+    if self:IsClaimedByAES(chat) then return false, format("ChatFrame%d is already seated by AtrocityEssentials", id) end
+
+    return true
+end
+
 --- The window we are seating, or nil with a reason when it is not usable.
 ---@return Frame? chat
 ---@return string? reason
 function ChatPanel:GetChatFrame()
     local id = self:GetConfig().frameID
-    local chat = id and _G["ChatFrame" .. id]
-    if not chat then return nil, format("ChatFrame%s does not exist", tostring(id)) end
+    if not id then return nil, "no chat window selected" end
 
-    -- The combat log carries its own quick-button bar and AES excludes it from
-    -- styling outright, so it would need geometry we are not writing.
-    if IsCombatLog and IsCombatLog(chat) then return nil, "the combat log is not supported" end
-    if chat.isDocked then return nil, format("ChatFrame%d is docked -- undock it first", id) end
-    if self:IsClaimedByAES(chat) then return nil, format("ChatFrame%d is already seated by AtrocityEssentials", id) end
+    local chat = _G["ChatFrame" .. id]
+    if not chat then return nil, format("ChatFrame%d does not exist", id) end
+
+    local seatable, reason = self:IsSeatable(chat)
+    if not seatable then return nil, reason end
 
     return chat
 end
