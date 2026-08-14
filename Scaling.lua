@@ -73,16 +73,16 @@ function Scaling:OnEnable()
     self:ScaleGuard(LFGListApplicationDialog, scale)
     self:ScaleGuard(LFGListInviteDialog, scale)
     self:ScaleGuard(MailFrame, scale)
-    self:ScaleGuard(MajorFactionRenownFrame, scale)
+    -- self:ScaleGuard(MajorFactionRenownFrame, scale)
     self:ScaleGuard(MerchantFrame, scale, "OnShow")
     self:ScaleGuard(MirrorTimerContainer, scale)
-    self:ScaleGuard(ObjectiveTrackerFrame, scale)
+    -- self:ScaleGuard(ObjectiveTrackerFrame, scale) -- EllesmereUI
     self:ScaleGuard(OpenMailFrame, scale)
     self:ScaleGuard(PVEFrame, scale)
     self:ScaleGuard(QuestFrame, scale)
     self:ScaleGuard(QueueStatusFrame, scale)
-    self:ScaleGuard(RaidUtility_ShowButton, scale, "OnShow")
-    self:ScaleGuard(RaidUtilityPanel, scale)
+    -- self:ScaleGuard(RaidUtility_ShowButton, scale, "OnShow")
+    -- self:ScaleGuard(RaidUtilityPanel, scale)
     self:ScaleGuard(ReadyCheckFrame, scale)
     self:ScaleGuard(ReadyCheckListenerFrame, scale, "OnShow")
     self:ScaleGuard(ReportFrame, scale)
@@ -223,9 +223,6 @@ function Scaling:OnEnable()
             listFrame:SetPoint(anchorPoint, nil, "BOTTOMLEFT", xPosition, yPosition)
         end
     end)
-
-    -- Addon Frames
-    self:ScaleGuard(ElvLootFrame, scale)
 end
 
 function Scaling:OnDisable()
