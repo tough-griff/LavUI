@@ -1,10 +1,10 @@
-## Interface: 120005
+## Interface: 120100
 ## Title: |cffffccffLavUI|r
 ## Version: @project-version@
 ## Notes: Lav's UI Utilities
 ## Author: Lavernius
 ## IconTexture: 626008
-## OptionalDependencies: Ayije_CDM, BigWigs, Details, ElvUI, Plater, WarpDeplete
+## OptionalDependencies: atrocityEssentials, BigWigs, EllesmereUI
 ## SavedVariables: LavUIDB
 ## X-Curse-Project-ID: 1479503
 ## X-Wago-ID: qKQmqkKx
