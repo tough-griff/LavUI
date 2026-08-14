@@ -240,6 +240,11 @@ function ChatPanel:Reseat(force)
         return
     end
 
+    -- From here on we have touched this window, so remember WHICH -- Release
+    -- has to undo exactly what we did and nothing else.
+    self:CaptureState(chat)
+    self.seated = chat
+
     -- Blizzard's dark background, killed by ALPHA rather than Hide: AES
     -- re-shows this on anything undocked and makes the flag sticky, so hiding
     -- it would be a fight. Nothing writes alpha on it.
@@ -318,13 +323,51 @@ function ChatPanel:SetShown(shown)
     if tab then tab:SetShown(shown) end
 end
 
---- Hand the window back to Blizzard. Resolved by ID rather than through
---- GetChatFrame, so a window that has since been docked or claimed still gets
---- everything we did to it undone.
+--- Where the window was before we first moved it this session. Captured once
+--- per window, from Reseat, before anything is written.
+---
+--- Only as good as the session it was taken in: SetUserPlaced means Blizzard
+--- reloads the window at OUR geometry, so after a reload this captures that
+--- rather than anything Blizzard chose. Releasing then leaves the window where
+--- the panel was instead of where it started. Deliberate -- the alternative is
+--- FCF_RestorePositionAndDimensions, which errors on a non-movable frame and
+--- taints the path into Blizzard's chat code. Drag or Edit Mode fixes it.
+---@param chat Frame
+function ChatPanel:CaptureState(chat)
+    if self.original and self.original.frame == chat then return end
+
+    -- Named fields rather than a packed table: GetPoint can hand back a nil
+    -- relativeTo, and a table with a hole in it breaks both # and unpack.
+    local point, relativeTo, relativePoint, x, y = chat:GetPoint()
+
+    self.original = {
+        frame = chat,
+        point = point,
+        relativeTo = relativeTo,
+        relativePoint = relativePoint,
+        x = x,
+        y = y,
+        width = chat:GetWidth(),
+        height = chat:GetHeight(),
+    }
+end
+
+-- HAND THE WINDOW BACK
+--
+-- Only ever the window we actually seated. An earlier cut resolved it by
+-- config ID instead, which meant changing the dropdown "restored" a window we
+-- had never touched -- and if that was a docked one or the combat log,
+-- Blizzard's own restore hard-errored on it.
+--
+-- It restores our captured geometry rather than calling
+-- FCF_RestorePositionAndDimensions, for the same reason: that calls
+-- SetUserPlaced, which errors on any frame that is not movable or resizable,
+-- and taints the path from us into Blizzard's chat code besides.
 function ChatPanel:Release()
-    local id = self:GetConfig().frameID
-    local chat = id and _G["ChatFrame" .. id]
+    local chat = self.seated
     if not chat then return end
+
+    self.seated = nil
 
     if chat.Background then chat.Background:SetAlpha(1) end
 
@@ -332,11 +375,23 @@ function ChatPanel:Release()
     -- invisible and click-through with no sign of why.
     chat:SetAlpha(1)
     chat:EnableMouse(true)
-    local tab = _G["ChatFrame" .. id .. "Tab"]
+    local tab = _G["ChatFrame" .. chat:GetID() .. "Tab"]
     if tab then tab:Show() end
 
-    if not LUI:InCombat() and FCF_RestorePositionAndDimensions then
-        FCF_RestorePositionAndDimensions(chat)
+    local original = self.original
+    if not (original and original.frame == chat) then return end
+    self.original = nil
+
+    chat:SetSize(original.width, original.height)
+    if original.point then
+        chat:ClearAllPoints()
+        chat:SetPoint(
+            original.point,
+            original.relativeTo or UIParent,
+            original.relativePoint or original.point,
+            original.x or 0,
+            original.y or 0
+        )
     end
 end
 
