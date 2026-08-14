@@ -19,6 +19,7 @@ Bindings.lua
 Commands.lua
 
 # Modules
+ChatPanel.lua
 HideLootRolls.lua
 Scaling.lua
 Tweaks.lua

@@ -28,26 +28,35 @@ end
 
 BINDING_NAME_LUITOGGLEBARS = "Toggle ActionBar Visibility"
 
---- Toggle the right chat panel and Details windows. Sorta like the old AddOnSkins
---- functionality.
----@param hide? boolean
+--- Toggle the right chat panel and Details windows. Sorta like the old AddOnSkins functionality.
+---
+--- Prefers our own panel, falling back to the AtrocityEssentials fork's second
+--- panel so the binding keeps working on either. Ours needs the module to do
+--- the hiding rather than the frame: our chat window is parented to UIParent,
+--- not to the panel, so hiding the panel alone would leave the text behind.
+---@param hide? boolean desired state of the chat panel. If nil, it will toggle the current state.
 function LUI:TogglePanel(hide)
-    if not Details or not RightChatPanel then return end
+    ---@class ChatPanel
+    local ChatPanel = self:GetModule("ChatPanel", true)
+    local ours = ChatPanel and ChatPanel.panel
+    local panel = ours or _G["AE_ChatPanel2"]
 
-    ---@type Frame
-    local Panel = RightChatPanel
-    if hide == true then
-        Panel:Hide()
-        Details:ReopenAllWindows()
-        for _, instance in Details:ListInstances() do
-            instance:RefreshWindow(true)
-        end
-    elseif hide == false then
-        Panel:Show()
-        Details:ShutDownAllInstances()
+    if not EllesmereUI or not panel or not _G["_EDM_DB"] then return end
+
+    local dmCfg = _G["_EDM_DB"].profile.dm
+
+    if hide == nil then return self:TogglePanel(panel:IsShown()) end
+
+    if ours then
+        ChatPanel:SetShown(not hide)
+    elseif hide then
+        panel:Hide()
     else
-        self:TogglePanel(Panel:IsShown())
+        panel:Show()
     end
+
+    dmCfg.visibility = hide and "always" or "never"
+    EllesmereUI.RequestVisibilityUpdate()
 end
 
 BINDING_NAME_LUITOGGLEPANEL = "Toggle Right Panel"

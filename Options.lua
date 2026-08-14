@@ -8,6 +8,16 @@ function LUI:GetDefaults()
             scaleEnabled = false,
             scaleFactor = 1.20,
             hideLootRolls = false,
+            -- Size and colours are read live from AtrocityEssentials, so the
+            -- only things worth saving are which window we seat and where.
+            chatPanel = {
+                enabled = false,
+                frameID = 3,
+                anchorFrom = "BOTTOMRIGHT",
+                anchorTo = "BOTTOMRIGHT",
+                xOffset = -1,
+                yOffset = 1,
+            },
             atrocityUI = {
                 editMode = false,
                 fonts = {
@@ -62,6 +72,8 @@ function LUI:GetDefaults()
 end
 
 function LUI:GetOptions()
+    ---@class ChatPanel
+    local ChatPanel = self:GetModule("ChatPanel")
     ---@class HideLootRolls
     local HideLootRolls = self:GetModule("HideLootRolls")
     ---@class Scaling
@@ -159,6 +171,76 @@ function LUI:GetOptions()
                             if val then HideLootRolls:Enable() else HideLootRolls:Disable() end
                         end,
                         width = "full",
+                    },
+                    chatPanel = {
+                        order = 30,
+                        type = "group",
+                        name = "Second Chat Panel",
+                        inline = true,
+                        args = {
+                            description = {
+                                order = 1,
+                                type = "description",
+                                fontSize = "medium",
+                                name = "Gives an undocked chat window the same panel treatment " ..
+                                    "AtrocityEssentials gives its own: matching size, matching backdrop " ..
+                                    "and the active-tab styling its docked tab gets.\n\n" ..
+                                    "Size and colours are read from AtrocityEssentials directly, so " ..
+                                    "there is nothing here to keep in sync. Drag it with the " ..
+                                    "EllesmereUI mover.\n",
+                                width = "full",
+                            },
+                            enabled = {
+                                order = 10,
+                                name = "Enable second chat panel",
+                                desc = "The window must be undocked, and must not be the one " ..
+                                    "AtrocityEssentials has already seated in its own panel.",
+                                type = "toggle",
+                                get = function() return self.db.global.chatPanel.enabled end,
+                                set = function(_, val)
+                                    self.db.global.chatPanel.enabled = val
+                                    if val then ChatPanel:Enable() else ChatPanel:Disable() end
+                                end,
+                                width = "full",
+                            },
+                            frameID = {
+                                order = 20,
+                                name = "Chat window",
+                                desc = "Which chat window to seat in the panel.",
+                                type = "select",
+                                disabled = function() return not self.db.global.chatPanel.enabled end,
+                                values = function()
+                                    local windows = {}
+                                    for i = 1, NUM_CHAT_WINDOWS do
+                                        local name = GetChatWindowInfo(i)
+                                        if name and name ~= "" then
+                                            windows[i] = format("%d. %s", i, name)
+                                        end
+                                    end
+                                    return windows
+                                end,
+                                get = function() return self.db.global.chatPanel.frameID end,
+                                set = function(_, val)
+                                    -- Let go of the old window before claiming
+                                    -- the new one, or it keeps our geometry.
+                                    ChatPanel:Release()
+                                    self.db.global.chatPanel.frameID = val
+                                    ChatPanel:UpdatePanel()
+                                end,
+                            },
+                            status = {
+                                order = 30,
+                                type = "description",
+                                fontSize = "medium",
+                                name = function()
+                                    if not self.db.global.chatPanel.enabled then return "" end
+                                    local reason = ChatPanel.blockedReason
+                                    if reason then return format("|cffff8080Not seated:|r %s.", reason) end
+                                    return "|cff80ff80Seated.|r"
+                                end,
+                                width = "full",
+                            },
+                        },
                     },
                 },
             },
