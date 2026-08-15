@@ -307,6 +307,9 @@ function ChatPanel:Reseat(force)
         end
     end
 
+    local tab = _G["ChatFrame" .. chat:GetID() .. "Tab"]
+    if tab then self:BlockTabMinimize(tab) end
+
     -- Only on a forced pass. The watcher runs twice a second, and rewriting
     -- the tab text on every tick would be churn at best and a flicker at
     -- worst -- Blizzard-driven repaints are caught by the hook instead.
@@ -361,6 +364,40 @@ function ChatPanel:FCFTab_UpdateColors(tab, selected)
     if selected then return end
     local chat = self:GetChatFrame()
     if chat and tab == _G["ChatFrame" .. chat:GetID() .. "Tab"] then self:StyleTab(chat) end
+end
+
+-- BLOCKING THE TAB'S DOUBLE-CLICK-TO-MINIMIZE
+--
+-- ChatTabTemplate's OnDoubleClick script (FloatingChatFrame.xml) calls
+-- FCF_MinimizeFrame whenever the tab's window isDocked == false -- which
+-- describes every window we seat, by design. So double-clicking to select
+-- text, or spamming a link, minimizes the window we just spent all this
+-- effort seating.
+--
+-- Overriding the script outright rather than SecureHookScript-ing it: a
+-- posthook still lets the original run first, and by then it is already
+-- minimized. GetScript/SetScript works fine here -- chat tabs are ordinary,
+-- unprotected buttons, not secure frames.
+
+--- Suppress a seated window's tab minimizing itself. Idempotent and reversed
+--- by RestoreTabMinimize, so Release hands the window back exactly as it was
+--- found.
+---@param tab Frame
+function ChatPanel:BlockTabMinimize(tab)
+    self.blockedMinimizeTabs = self.blockedMinimizeTabs or {}
+    if self.blockedMinimizeTabs[tab] then return end
+
+    self.blockedMinimizeTabs[tab] = tab:GetScript("OnDoubleClick")
+    tab:SetScript("OnDoubleClick", nil)
+end
+
+---@param tab Frame
+function ChatPanel:RestoreTabMinimize(tab)
+    local original = self.blockedMinimizeTabs and self.blockedMinimizeTabs[tab]
+    if not original then return end
+
+    tab:SetScript("OnDoubleClick", original)
+    self.blockedMinimizeTabs[tab] = nil
 end
 
 -- SHOW/HIDE FOR THE TOGGLE BINDING
@@ -468,7 +505,10 @@ function ChatPanel:Release()
     chat:SetAlpha(1)
     chat:EnableMouse(true)
     local tab = _G["ChatFrame" .. chat:GetID() .. "Tab"]
-    if tab then tab:Show() end
+    if tab then
+        tab:Show()
+        self:RestoreTabMinimize(tab)
+    end
 
     local original = self.original
     if not (original and original.frame == chat) then return end
