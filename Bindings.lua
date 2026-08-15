@@ -28,26 +28,14 @@ end
 
 BINDING_NAME_LUITOGGLEBARS = "Toggle ActionBar Visibility"
 
---- Toggle the right chat panel and danage meter windows. Sorta like the old AddOnSkins functionality.
+--- Toggle the right chat panel and damage meter windows. See ChatPanel:TogglePanel --
+--- kept here as a thin delegator since the keybinding calls this name.
 ---@param hide? boolean desired state of the chat panel. If nil, it will toggle the current state.
 function LUI:TogglePanel(hide)
     ---@class ChatPanel
     local ChatPanel = self:GetModule("ChatPanel", true)
-    if not EllesmereUI or not ChatPanel.panel or not _G["_EDM_DB"] then return end
-
-    local dmCfg = _G["_EDM_DB"].profile.dm
-
-    if hide == nil then
-        return self:TogglePanel(ChatPanel.panel:IsShown())
-    elseif hide then
-        ChatPanel:SetShown(false)
-        dmCfg.visibility = "always"
-    else
-        ChatPanel:SetShown(true)
-        dmCfg.visibility = "never"
-    end
-
-    EllesmereUI.RequestVisibilityUpdate()
+    if not ChatPanel then return end
+    return ChatPanel:TogglePanel(hide)
 end
 
 BINDING_NAME_LUITOGGLEPANEL = "Toggle Right Panel"

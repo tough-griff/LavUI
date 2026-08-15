@@ -378,6 +378,28 @@ function ChatPanel:SetShown(shown)
     if tab then tab:SetShown(shown) end
 end
 
+--- Toggle this panel and any damage meter windows together. Sorta like the
+--- old AddOnSkins functionality. Moved here from LUI:TogglePanel, which now
+--- just delegates -- the keybinding still calls that name.
+---@param hide? boolean desired state of the chat panel. If nil, toggles the current state.
+function ChatPanel:TogglePanel(hide)
+    if not self.panel or not EllesmereUI or not _G["_EDM_DB"] then return end
+
+    local dmCfg = _G["_EDM_DB"].profile.dm
+
+    if hide == nil then
+        return self:TogglePanel(self.panel:IsShown())
+    elseif hide then
+        self:SetShown(false)
+        dmCfg.visibility = "always"
+    else
+        self:SetShown(true)
+        dmCfg.visibility = "never"
+    end
+
+    EllesmereUI.RequestVisibilityUpdate()
+end
+
 --- Where the window was before we first moved it this session. Captured once
 --- per window, from Reseat, before anything is written.
 ---
@@ -522,7 +544,7 @@ function ChatPanel:PLAYER_ENTERING_WORLD()
     -- numbers about to be overwritten.
     C_Timer.After(0, function()
         self:Reseat(true)
-        if self:GetConfig().hideInCombat then LUI:TogglePanel(LUI:InCombat()) end
+        if self:GetConfig().hideInCombat then self:TogglePanel(LUI:InCombat()) end
     end)
 end
 
@@ -533,7 +555,7 @@ end
 --- Hides this panel (and, via TogglePanel, any damage meters) on
 --- entering combat. See GetOptions' hideInCombat toggle.
 function ChatPanel:PLAYER_REGEN_DISABLED()
-    if self:GetConfig().hideInCombat then LUI:TogglePanel(true) end
+    if self:GetConfig().hideInCombat then self:TogglePanel(true) end
 end
 
 function ChatPanel:PLAYER_REGEN_ENABLED()
@@ -547,7 +569,7 @@ function ChatPanel:PLAYER_REGEN_ENABLED()
     -- two, and showing then hiding then showing again is worse than a delay.
     if self:GetConfig().hideInCombat then
         C_Timer.After(10, function()
-            if not LUI:InCombat() then LUI:TogglePanel(false) end
+            if not LUI:InCombat() then self:TogglePanel(false) end
         end)
     end
 end
