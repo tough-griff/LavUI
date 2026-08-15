@@ -22,9 +22,10 @@ local ChatPanel = LUI:NewModule("ChatPanel", "AceEvent-3.0", "AceHook-3.0")
 --      never reparent -- we anchor with SetPoint and leave the parent alone.
 --      Anchors are independent of parent, so its write becomes a no-op.
 --   2. PositionChat re-shows Blizzard's dark `chat.Background` on anything
---      undocked, and the flag is sticky in both directions. So we use
---      SetAlpha(0) instead of Hide -- AES only ever calls Show/Hide there, so
---      the two never collide.
+--      undocked it does not own -- which is us. Rather than chase every
+--      caller (AES's own re-show, Blizzard's own), Reseat hooks OnShow once
+--      per window and hides it straight back for as long as we hold the
+--      seat -- see the comment there.
 --
 -- It sets no position and no size for a window it does not own, which is what
 -- makes this viable at all. None of that is a supported API; if AES changes
@@ -283,11 +284,16 @@ function ChatPanel:Reseat(force)
     self:CaptureState(chat)
     self.seated = chat
 
-    -- Blizzard's dark background, killed by ALPHA rather than Hide: AES
-    -- re-shows this on anything undocked and makes the flag sticky, so hiding
-    -- it would be a fight. Nothing writes alpha on it.
+    -- Hides Blizzard's dark background.
     local background = chat.Background
-    if background and background:GetAlpha() ~= 0 then background:SetAlpha(0) end
+    if background then
+        if background:IsShown() then background:Hide() end
+        if not self:IsHooked(background, "OnShow") then
+            self:SecureHookScript(background, "OnShow", function(bg)
+                if self.seated == chat then bg:Hide() end
+            end)
+        end
+    end
 
     -- Only on a forced pass. The watcher runs twice a second, and rewriting
     -- the tab text on every tick would be churn at best and a flicker at
@@ -332,6 +338,17 @@ function ChatPanel:StyleTab(chat)
     if not tab then return end
 
     aes:OnFCFTab_UpdateColors(tab, true)
+end
+
+--- Post-hook handler for Blizzard's FCFTab_UpdateColors -- see StyleTab.
+--- Ignores selected tabs (already correct) and re-styles ours after Blizzard
+--- repaints it grey.
+---@param tab Frame
+---@param selected boolean
+function ChatPanel:FCFTab_UpdateColors(tab, selected)
+    if selected then return end
+    local chat = self:GetChatFrame()
+    if chat and tab == _G["ChatFrame" .. chat:GetID() .. "Tab"] then self:StyleTab(chat) end
 end
 
 -- SHOW/HIDE FOR THE TOGGLE BINDING
@@ -407,7 +424,9 @@ function ChatPanel:Release()
 
     self.seated = nil
 
-    if chat.Background then chat.Background:SetAlpha(1) end
+    -- self.seated is already cleared, so the OnShow hook from Reseat no-ops
+    -- and this actually sticks.
+    if chat.Background then chat.Background:Show() end
 
     -- Undo a SetShown(false) that is still in effect, or the window comes back
     -- invisible and click-through with no sign of why.
@@ -501,17 +520,36 @@ function ChatPanel:PLAYER_ENTERING_WORLD()
     -- Deferred a frame: Blizzard restores its own chat geometry as part of the
     -- loading screen, and writing into the middle of that measures against
     -- numbers about to be overwritten.
-    C_Timer.After(0, function() self:Reseat(true) end)
+    C_Timer.After(0, function()
+        self:Reseat(true)
+        if self:GetConfig().hideInCombat then LUI:TogglePanel(LUI:InCombat()) end
+    end)
 end
 
 function ChatPanel:UPDATE_CHAT_WINDOWS()
     self:Reseat(true)
 end
 
+--- Hides this panel (and, via TogglePanel, any damage meters) on
+--- entering combat. See GetOptions' hideInCombat toggle.
+function ChatPanel:PLAYER_REGEN_DISABLED()
+    if self:GetConfig().hideInCombat then LUI:TogglePanel(true) end
+end
+
 function ChatPanel:PLAYER_REGEN_ENABLED()
-    if not self.pendingReseat then return end
-    self.pendingReseat = nil
-    self:Reseat(true)
+    if self.pendingReseat then
+        self.pendingReseat = nil
+        self:Reseat(true)
+    end
+
+    -- 10 seconds rather than immediate, and re-checked at the end of that --
+    -- a combat log pull can bounce in and out of regen within a second or
+    -- two, and showing then hiding then showing again is worse than a delay.
+    if self:GetConfig().hideInCombat then
+        C_Timer.After(10, function()
+            if not LUI:InCombat() then LUI:TogglePanel(false) end
+        end)
+    end
 end
 
 function ChatPanel:OnInitialize()
@@ -532,19 +570,23 @@ function ChatPanel:OnEnable()
 
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("UPDATE_CHAT_WINDOWS")
+    self:RegisterEvent("PLAYER_REGEN_DISABLED")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
 
     -- Runs AFTER any hook AES registered at load, so our tab keeps the
-    -- selected treatment rather than being overwritten back to grey. Hooked
-    -- once for the session -- a post-hook cannot be removed, so OnDisable
-    -- leans on the IsEnabled check inside it instead.
-    if not self.tabHooked and FCFTab_UpdateColors then
-        hooksecurefunc("FCFTab_UpdateColors", function(tab, selected)
-            if selected or not self:IsEnabled() then return end
-            local chat = self:GetChatFrame()
-            if chat and tab == _G["ChatFrame" .. chat:GetID() .. "Tab"] then self:StyleTab(chat) end
-        end)
-        self.tabHooked = true
+    -- selected treatment rather than being overwritten back to grey.
+    if FCFTab_UpdateColors and not self:IsHooked("FCFTab_UpdateColors") then
+        self:SecureHook("FCFTab_UpdateColors")
+    end
+
+    -- Live-apply AES's OWN settings changes onto our panel instead of
+    -- requiring a reload. Every widget on their Chat options page funnels
+    -- through this one method (GUI/Tabs/Skinning/Chat.lua's ApplySettings),
+    -- writing into the same db GetAESDB() already reads live -- riding it
+    -- picks up size, backdrop, font and tab changes for free.
+    local aes = self:GetAES()
+    if aes and aes.ApplySettings and not self:IsHooked(aes, "ApplySettings") then
+        self:SecureHook(aes, "ApplySettings", function() self:UpdatePanel() end)
     end
 
     self:StartWatcher()

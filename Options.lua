@@ -21,6 +21,7 @@ function LUI:GetDefaults()
                 anchorTo = "BOTTOMRIGHT",
                 xOffset = -1,
                 yOffset = 1,
+                hideInCombat = false,
             },
             atrocityUI = {
                 editMode = false,
@@ -208,6 +209,18 @@ function LUI:GetOptions()
                                     self.db.global.chatPanel.enabled = val
                                     if val then ChatPanel:Enable() else ChatPanel:Disable() end
                                 end,
+                                width = "full",
+                            },
+                            hideInCombat = {
+                                order = 15,
+                                name = "Hide in combat",
+                                desc = "Hides this panel -- and any damage meters via the same " ..
+                                    "Toggle Right Panel keybind -- when you enter combat, and " ..
+                                    "shows them again about 10 seconds after combat ends.",
+                                type = "toggle",
+                                disabled = function() return not self.db.global.chatPanel.enabled end,
+                                get = function() return self.db.global.chatPanel.hideInCombat end,
+                                set = function(_, val) self.db.global.chatPanel.hideInCombat = val end,
                                 width = "full",
                             },
                             frameID = {
