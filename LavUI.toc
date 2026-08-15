@@ -20,5 +20,6 @@ Commands.lua
 
 # Modules
 Modules\ChatPanel.lua
+Modules\ChatSetup.lua
 Modules\HideLootRolls.lua
 Modules\Scaling.lua

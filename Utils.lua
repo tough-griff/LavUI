@@ -11,6 +11,10 @@ function LUI:Debug(data, dataName)
     end
 end
 
+function LUI:Print(msg)
+    print(format("|cffffccffLavUI|r: %s", msg))
+end
+
 function LUI:InCombat()
     return InCombatLockdown() or UnitAffectingCombat("player") or UnitAffectingCombat("pet")
 end

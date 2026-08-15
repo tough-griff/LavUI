@@ -30,6 +30,8 @@ end
 function LUI:GetOptions()
     ---@class ChatPanel
     local ChatPanel = self:GetModule("ChatPanel")
+    ---@class ChatSetup
+    local ChatSetup = self:GetModule("ChatSetup")
     ---@class HideLootRolls
     local HideLootRolls = self:GetModule("HideLootRolls")
     ---@class Scaling
@@ -204,6 +206,33 @@ function LUI:GetOptions()
                                     return "|cff80ff80Seated.|r"
                                 end,
                                 width = "full",
+                            },
+                        },
+                    },
+                    chatSetup = {
+                        order = 40,
+                        type = "group",
+                        name = "Chat Window Setup",
+                        inline = true,
+                        args = {
+                            description = {
+                                order = 1,
+                                type = "description",
+                                fontSize = "medium",
+                                name = "Resets your chat windows and re-applies the message group / " ..
+                                    "channel layout defined in Modules\\ChatSetup.lua. Edit that file " ..
+                                    "to change which groups and channels land on which tab.\n",
+                                width = "full",
+                            },
+                            run = {
+                                order = 10,
+                                name = "Configure Chat Windows",
+                                desc = "Reset chat windows and apply the layout from ChatSetup.lua.",
+                                type = "execute",
+                                confirm = true,
+                                confirmText = "This resets all chat windows to reapply your configured " ..
+                                    "layout. Continue?",
+                                func = function() ChatSetup:Configure() end,
                             },
                         },
                     },

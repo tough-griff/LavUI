@@ -26,6 +26,10 @@ in-game.
 - `.pkgmeta` also declares the `Libs/` externals (Ace3 modules, fetched from the
   WoWAce svn mirror at package time) — `Libs/` is gitignored and not present in a
   fresh checkout; it only exists after packaging.
+- `build.cmd` symlinks every `*.lua`/`*.xml` file it finds into `.release/LavUI/`
+  individually — it does not symlink whole directories. **Whenever a new file is
+  added anywhere in the repo, re-run `build.cmd`** or the new file won't exist in
+  `.release/LavUI/` and won't be picked up in-game for local testing.
 
 ## Architecture
 
