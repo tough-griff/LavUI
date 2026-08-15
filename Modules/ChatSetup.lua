@@ -43,13 +43,14 @@ local function RemoveMessageGroup(frame, group)
     end
 end
 
+-- No ChatFrame_AddChannel fallback here, unlike its four siblings above:
+-- Blizzard's Deprecated_ChatFrame.lua never aliased one. :AddChannel is the
+-- only path that has ever existed.
 ---@param frame ChatFrameMixin
 ---@param channel string
 local function AddChannel(frame, channel)
     if frame.AddChannel then
         frame:AddChannel(channel)
-    elseif ChatFrame_AddChannel then
-        ChatFrame_AddChannel(frame, channel)
     end
 end
 

@@ -129,8 +129,8 @@ function ChatPanel:IsSeatable(chat)
     local id = chat:GetID()
     if id <= RESERVED_WINDOWS then return false, "Blizzard's own windows cannot be seated" end
     if IsCombatLog and IsCombatLog(chat) then return false, "the combat log is not supported" end
-    if chat.isTemporary then return false, format("ChatFrame%d is a temporary window", id) end
-    if chat.isDocked then return false, format("ChatFrame%d is docked -- undock it first", id) end
+    if chat.isTemporary then return false, format("ChatFrame%d is a temporary window", id) end ---@diagnostic disable-line: undefined-field
+    if chat.isDocked then return false, format("ChatFrame%d is docked -- undock it first", id) end ---@diagnostic disable-line: undefined-field
     if self:IsClaimedByAES(chat) then return false, format("ChatFrame%d is already seated by AtrocityEssentials", id) end
 
     return true
@@ -297,7 +297,7 @@ function ChatPanel:Reseat(force)
     self.seated = chat
 
     -- Hides Blizzard's dark background.
-    local background = chat.Background
+    local background = chat.Background ---@diagnostic disable-line: undefined-field
     if background then
         if background:IsShown() then background:Hide() end
         if not self:IsHooked(background, "OnShow") then
@@ -498,7 +498,7 @@ function ChatPanel:Release()
 
     -- self.seated is already cleared, so the OnShow hook from Reseat no-ops
     -- and this actually sticks.
-    if chat.Background then chat.Background:Show() end
+    if chat.Background then chat.Background:Show() end ---@diagnostic disable-line: undefined-field
 
     -- Undo a SetShown(false) that is still in effect, or the window comes back
     -- invisible and click-through with no sign of why.
