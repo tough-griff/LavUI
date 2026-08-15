@@ -19,6 +19,6 @@ Bindings.lua
 Commands.lua
 
 # Modules
-ChatPanel.lua
-HideLootRolls.lua
-Scaling.lua
+Modules\ChatPanel.lua
+Modules\HideLootRolls.lua
+Modules\Scaling.lua
