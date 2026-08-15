@@ -231,7 +231,9 @@ function ChatPanel:UpdatePanel()
     self.tabBackdrop:SetPoint("BOTTOMRIGHT", self.panel, "TOPRIGHT", 0, -TAB_HEIGHT)
     self.tabBackdrop:SetBackdrop(BACKDROP_TEMPLATE)
 
-    if not tabDB or tabDB.Enabled then
+    -- Matches the panel backdrop's semantics above: nil/unset reads as
+    -- enabled, only an explicit false turns it off.
+    if not tabDB or tabDB.Enabled ~= false then
         self.tabBackdrop:SetBackdropColor(tabColor[1], tabColor[2], tabColor[3], tabColor[4] or 0.2)
         self.tabBackdrop:SetBackdropBorderColor(tabBorder[1], tabBorder[2], tabBorder[3], tabBorder[4] or 1)
         self.tabBackdrop:Show()
@@ -269,15 +271,25 @@ function ChatPanel:Reseat(force)
     if not self.panel then return end
 
     local chat, reason = self:GetChatFrame()
-    self.blockedReason = reason
-    if not chat then return end
+    if not chat then
+        self.blockedReason = reason
+        -- The window we held stopped being seatable out from under us --
+        -- AES claimed it, it got re-docked, whatever. Let go properly rather
+        -- than leaving self.seated (and its permanent Background OnShow
+        -- hook) pointed at a window we no longer control.
+        if self.seated then self:Release() end
+        return
+    end
 
     -- Chat frames are unprotected, but AES defers its own positioning in
     -- combat and there is nothing here worth racing it for.
     if LUI:InCombat() then
         self.pendingReseat = true
+        self.blockedReason = "in combat -- will seat once it ends"
         return
     end
+
+    self.blockedReason = nil
 
     -- From here on we have touched this window, so remember WHICH -- Release
     -- has to undo exactly what we did and nothing else.
@@ -381,23 +393,24 @@ end
 --- Toggle this panel and any damage meter windows together. Sorta like the
 --- old AddOnSkins functionality. Moved here from LUI:TogglePanel, which now
 --- just delegates -- the keybinding still calls that name.
+---
+--- Only self.panel is required. The damage-meter visibility and EllesmereUI
+--- pieces are best-effort extras for users who also run those addons, not a
+--- precondition for hiding the panel itself -- "Hide in combat" should not
+--- silently do nothing just because EllesmereUIDamageMeters/EllesmereUI are
+--- not installed.
 ---@param hide? boolean desired state of the chat panel. If nil, toggles the current state.
 function ChatPanel:TogglePanel(hide)
-    if not self.panel or not EllesmereUI or not _G["_EDM_DB"] then return end
+    if not self.panel then return end
+    if hide == nil then hide = self.panel:IsShown() end
 
-    local dmCfg = _G["_EDM_DB"].profile.dm
+    self:SetShown(not hide)
 
-    if hide == nil then
-        return self:TogglePanel(self.panel:IsShown())
-    elseif hide then
-        self:SetShown(false)
-        dmCfg.visibility = "always"
-    else
-        self:SetShown(true)
-        dmCfg.visibility = "never"
-    end
+    local db = _G["_EDM_DB"]
+    local cfg = db and db.profile and db.profile.dm
+    if cfg then cfg.visibility = hide and "always" or "never" end
 
-    EllesmereUI.RequestVisibilityUpdate()
+    if EllesmereUI and EllesmereUI.RequestVisibilityUpdate then EllesmereUI.RequestVisibilityUpdate() end
 end
 
 --- Where the window was before we first moved it this session. Captured once
@@ -543,6 +556,7 @@ function ChatPanel:PLAYER_ENTERING_WORLD()
     -- loading screen, and writing into the middle of that measures against
     -- numbers about to be overwritten.
     C_Timer.After(0, function()
+        if not self:IsEnabled() then return end
         self:Reseat(true)
         if self:GetConfig().hideInCombat then self:TogglePanel(LUI:InCombat()) end
     end)
@@ -569,6 +583,7 @@ function ChatPanel:PLAYER_REGEN_ENABLED()
     -- two, and showing then hiding then showing again is worse than a delay.
     if self:GetConfig().hideInCombat then
         C_Timer.After(10, function()
+            if not self:IsEnabled() then return end
             if not LUI:InCombat() then self:TogglePanel(false) end
         end)
     end
