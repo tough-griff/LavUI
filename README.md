@@ -32,17 +32,3 @@ Once installed, use the `/lui` command in-game to bring up the configuration
 options. You'll also find it in the default Blizzard addon options. If you
 chose to change the **scale factor**, please remember to reload your UI
 (or relog).
-
-## AtrocityUI Tweaks
-
-If you'd like to use my tweaks for AtrocityUI, follow these steps whenever
-Atrocity releases a new version of his UI:
-
-- Install the [AtrocityUI pack](https://uipacks.wago.io/user/59dabe91b7ebeeaf72eec80a)
-  of your choice. You will need the [Wago App](https://addons.wago.io/app) for
-  this.
-- Run the Wago installer: `/wago` (highly recommended).
-- Run LavUI (`/lui`). Choose which AtrocityUI Tweaks you'd like and click `Apply`.
-
-These tweaks are designed for the 1440p version of Retail AtrocityUI.
-**The 1080p and classic versions are not supported.**
