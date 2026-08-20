@@ -180,7 +180,6 @@ function ChatSetup:Configure()
     RemoveAllMessageGroups(guild)
     AddMessageGroup(guild, "GUILD")
     AddMessageGroup(guild, "OFFICER")
-    AddMessageGroup(guild, "GUILD_ACHIEVEMENT")
     AddMessageGroup(guild, "GUILD_DISCORD")
 
     -- Tab 7: Spam
