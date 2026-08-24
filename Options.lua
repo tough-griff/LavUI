@@ -61,7 +61,7 @@ function LUI:GetOptions()
                 name = "Keybindings",
                 desc = "Open the keybinding menu.",
                 type = "execute",
-                func = function() return Settings.OpenToCategory(39, BINDING_HEADER_LUI) end,
+                func = function() return Settings.OpenToCategory(Settings.KEYBINDINGS_CATEGORY_ID, BINDING_HEADER_LUI) end,
             },
             general = {
                 order = 10,
