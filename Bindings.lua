@@ -3,27 +3,28 @@ local LUI = select(2, ...)
 
 BINDING_HEADER_LUI = format("|cffffccff%s|r", "LavUI")
 
-local ACTION_BARS = {
-    "bar1", "bar3", "bar4", "bar5", "bar6", "bar13", "bar14", "bar15", "barPet"
-}
+local ACTION_BARS = { "MainBar", "Bar2", "Bar3", "Bar4", "Bar5", "PetBar" }
 
 --- Toggle the mouseover state of the (default) hidden action bars.
 function LUI:ToggleBars()
-    if not ElvUI then return end
-    local E = unpack(ElvUI)
+    if not EllesmereUI or not EllesmereUI.Lite then return end
 
-    local mouseover = E.db.actionbar.bar1.mouseover
+    local EAB = EllesmereUI.Lite.GetAddon("EllesmereUIActionBars", true)
+    if not EAB or not EAB.db or not EAB.VisibilityCompat then return end
+
+    local bars = EAB.db.profile.bars
+    local mouseover = bars.MainBar and bars.MainBar.mouseoverEnabled
+    local mode = mouseover and "always" or "mouseover"
+
     for _, bar in pairs(ACTION_BARS) do
-        if E.db.actionbar[bar] then
-            E.db.actionbar[bar].mouseover = not mouseover
-
-            if bar == "barPet" then
-                E.ActionBars:PositionAndSizeBarPet()
-            else
-                E.ActionBars:PositionAndSizeBar(bar)
-            end
+        if bars[bar] then
+            EAB.VisibilityCompat.ApplyMode(bars[bar], mode)
         end
     end
+
+    EAB:RefreshRuntimeVisibility()
+    EAB:RefreshMouseover()
+    EAB:ApplyCombatVisibility()
 end
 
 BINDING_NAME_LUITOGGLEBARS = "Toggle ActionBar Visibility"
