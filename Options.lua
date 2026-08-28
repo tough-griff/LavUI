@@ -8,6 +8,8 @@ function LUI:GetDefaults()
             scaleEnabled = false,
             scaleFactor = 1.20,
             hideLootRolls = false,
+            autoAcceptRes = false,
+            autoAcceptCombatRes = false,
             -- Size and colours are read live from AtrocityEssentials, so the
             -- only things worth saving are which window we seat and where.
             chatPanel = {
@@ -34,6 +36,8 @@ function LUI:GetOptions()
     local ChatSetup = self:GetModule("ChatSetup")
     ---@class HideLootRolls
     local HideLootRolls = self:GetModule("HideLootRolls")
+    ---@class AutoAcceptRes
+    local AutoAcceptRes = self:GetModule("AutoAcceptRes")
     ---@class Scaling
     local Scaling = self:GetModule("Scaling")
 
@@ -120,6 +124,47 @@ function LUI:GetOptions()
                             if val then HideLootRolls:Enable() else HideLootRolls:Disable() end
                         end,
                         width = "full",
+                    },
+                    autoAcceptRes = {
+                        order = 25,
+                        type = "group",
+                        name = "Auto Accept Resurrections",
+                        inline = true,
+                        args = {
+                            outOfCombat = {
+                                order = 10,
+                                name = "Out of combat",
+                                desc = "Accept resurrects when no fight is detected.",
+                                type = "toggle",
+                                get = function() return self.db.global.autoAcceptRes end,
+                                set = function(_, val)
+                                    self.db.global.autoAcceptRes = val
+                                    if val or self.db.global.autoAcceptCombatRes then
+                                        AutoAcceptRes:Enable()
+                                    else
+                                        AutoAcceptRes:Disable()
+                                    end
+                                end,
+                                width = "full",
+                            },
+                            inCombat = {
+                                order = 20,
+                                name = "In combat / during encounters",
+                                desc = "Accept while an encounter is in progress or the caster " ..
+                                    "is still fighting -- i.e. battle rezzes.",
+                                type = "toggle",
+                                get = function() return self.db.global.autoAcceptCombatRes end,
+                                set = function(_, val)
+                                    self.db.global.autoAcceptCombatRes = val
+                                    if val or self.db.global.autoAcceptRes then
+                                        AutoAcceptRes:Enable()
+                                    else
+                                        AutoAcceptRes:Disable()
+                                    end
+                                end,
+                                width = "full",
+                            },
+                        },
                     },
                     chatPanel = {
                         order = 30,
