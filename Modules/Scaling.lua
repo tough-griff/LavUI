@@ -17,27 +17,31 @@ function Scaling:ScaleGuard(frame, scale, script)
 
     if self:IsHooked(frame, "SetScale") then return end
 
-    local guard
-    self:SecureHook(frame, "SetScale", function()
-        -- Can't scale in combat or Blizzard will yell at us.
-        if not LUI:InCombat() then
-            if guard then return end
-            guard = true
-            frame:SetScale(scale)
-            guard = false
-        end
-    end)
+    if not frame:IsProtected() then
+        local guard
+        self:SecureHook(frame, "SetScale", function()
+            -- Can't scale in combat or Blizzard will yell at us.
+            if not LUI:InCombat() then
+                if guard then return end
+                guard = true
+                frame:SetScale(scale)
+                guard = false
+            end
+        end)
+    end
 
     if script and not self:IsHooked(frame, script) then
         self:SecureHookScript(frame, script, function()
-            if not LUI:InCombat() then
-                frame:SetScale(scale)
-            end
+            -- Defer to avoid ADDON_ACTION_BLOCKED when the script fires from within
+            -- a protected Blizzard call chain (e.g. UIParentPanelManager Show).
+            C_Timer.After(0, function()
+                if not LUI:InCombat() then
+                    frame:SetScale(scale)
+                end
+            end)
         end)
-    else
-        if not LUI:InCombat() then
-            frame:SetScale(scale)
-        end
+    elseif not frame:IsProtected() and not LUI:InCombat() then
+        frame:SetScale(scale)
     end
 end
 
