@@ -56,6 +56,16 @@ local BACKDROP_TEMPLATE = {
 local EPSILON = 0.5
 local WATCH_INTERVAL = 0.5
 
+--- Whether the player is inside a Mythic+ dungeon -- difficulty 8 covers the
+--- whole run, keystone timer started or not, and clears the moment the
+--- instance is left, which is exactly the "inside a Mythic+ dungeon" window
+--- the force-meters option means to cover.
+---@return boolean
+local function InMythicPlus()
+    local _, instanceType, difficultyID = GetInstanceInfo()
+    return instanceType == "party" and difficultyID == DifficultyUtil.ID.DungeonChallenge
+end
+
 ---@return table
 function ChatPanel:GetConfig()
     return LUI.db.global.chatPanel
@@ -308,7 +318,23 @@ function ChatPanel:Reseat(force)
     end
 
     local tab = _G["ChatFrame" .. chat:GetID() .. "Tab"]
-    if tab then self:BlockTabMinimize(tab) end
+    if tab then
+        self:BlockTabMinimize(tab)
+
+        -- Blizzard's chat-tab mouseover fade (FCF_OnUpdate) tests every
+        -- window in CHAT_FRAMES by IsMouseOver, which ignores alpha and
+        -- EnableMouse -- so it still fires for a seated-but-hidden window
+        -- sitting under whatever now occupies that screen space (e.g. damage
+        -- meters swapped in by TogglePanel). FCF_FadeInChatFrame then calls
+        -- UIFrameFadeIn on the tab, and UIFrameFade unconditionally Shows the
+        -- frame, undoing SetShown(false). Same fight as Background above --
+        -- hide it straight back for as long as the panel should stay hidden.
+        if not self:IsHooked(tab, "OnShow") then
+            self:SecureHookScript(tab, "OnShow", function(t)
+                if self.seated == chat and self.panel and not self.panel:IsShown() then t:Hide() end
+            end)
+        end
+    end
 
     -- Only on a forced pass. The watcher runs twice a second, and rewriting
     -- the tab text on every tick would be churn at best and a flicker at
@@ -591,6 +617,17 @@ function ChatPanel:RegisterUnlockElement()
     self.unlockRegistered = true
 end
 
+--- Single source of truth for whether the panel should be hidden (and, via
+--- TogglePanel, damage meters shown) right now -- combat and Mythic+ both
+--- feed into it so neither one clobbers the other on its own event.
+---@return boolean hide
+function ChatPanel:ShouldHide()
+    local cfg = self:GetConfig()
+    if InMythicPlus() then return true end
+    if cfg.hideInCombat and LUI:InCombat() then return true end
+    return false
+end
+
 function ChatPanel:PLAYER_ENTERING_WORLD()
     -- Deferred a frame: Blizzard restores its own chat geometry as part of the
     -- loading screen, and writing into the middle of that measures against
@@ -604,6 +641,10 @@ end
 
 function ChatPanel:UPDATE_CHAT_WINDOWS()
     self:Reseat(true)
+end
+
+function ChatPanel:ZONE_CHANGED_NEW_AREA()
+    self:TogglePanel(self:ShouldHide())
 end
 
 --- Hides this panel (and, via TogglePanel, any damage meters) on
@@ -624,7 +665,9 @@ function ChatPanel:PLAYER_REGEN_ENABLED()
     if self:GetConfig().hideInCombat then
         C_Timer.After(10, function()
             if not self:IsEnabled() then return end
-            if not LUI:InCombat() then self:TogglePanel(false) end
+            -- ShouldHide rather than a flat false: still inside a Mythic+
+            -- dungeon should keep meters up, not hand the chat panel back.
+            if not LUI:InCombat() then self:TogglePanel(self:ShouldHide()) end
         end)
     end
 end
@@ -649,6 +692,7 @@ function ChatPanel:OnEnable()
     self:RegisterEvent("UPDATE_CHAT_WINDOWS")
     self:RegisterEvent("PLAYER_REGEN_DISABLED")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
+    self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 
     -- Runs AFTER any hook AES registered at load, so our tab keeps the
     -- selected treatment rather than being overwritten back to grey.
