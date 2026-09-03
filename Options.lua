@@ -10,6 +10,7 @@ function LUI:GetDefaults()
             hideLootRolls = false,
             autoAcceptRes = false,
             autoAcceptCombatRes = false,
+            tooltips = true,
             -- Size and colours are read live from AtrocityEssentials, so the
             -- only things worth saving are which window we seat and where.
             chatPanel = {
@@ -40,6 +41,8 @@ function LUI:GetOptions()
     local AutoAcceptRes = self:GetModule("AutoAcceptRes")
     ---@class Scaling
     local Scaling = self:GetModule("Scaling")
+    ---@class Tooltips
+    local Tooltips = self:GetModule("Tooltips")
 
     ---@type AceConfig.OptionsTable
     return {
@@ -122,6 +125,19 @@ function LUI:GetOptions()
                         set = function(_, val)
                             self.db.global.hideLootRolls = val
                             if val then HideLootRolls:Enable() else HideLootRolls:Disable() end
+                        end,
+                        width = "full",
+                    },
+                    tooltips = {
+                        order = 22,
+                        name = "Extend atrocityEssentials tooltips",
+                        desc = "Adds a few functionality tweaks to atrocityEssentials Tooltips " ..
+                            "module, including showing toy IDs.",
+                        type = "toggle",
+                        get = function() return self.db.global.tooltips end,
+                        set = function(_, val)
+                            self.db.global.tooltips = val
+                            if val then Tooltips:Enable() else Tooltips:Disable() end
                         end,
                         width = "full",
                     },
