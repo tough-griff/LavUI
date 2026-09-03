@@ -19,6 +19,7 @@ Bindings.lua
 Commands.lua
 
 # Modules
+Modules\AutoAcceptRes.lua
 Modules\ChatPanel.lua
 Modules\ChatSetup.lua
 Modules\CookingButtons.lua
