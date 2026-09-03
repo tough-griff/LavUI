@@ -10,6 +10,11 @@ function LUI:GetDefaults()
             hideLootRolls = false,
             autoAcceptRes = false,
             autoAcceptCombatRes = false,
+            cookingButtons = {
+                enabled = false,
+                -- Toy/item ID or pasted item link; defaults to Maruuk Cooking Pot.
+                toyID = 198402,
+            },
             tooltips = true,
             -- Size and colours are read live from AtrocityEssentials, so the
             -- only things worth saving are which window we seat and where.
@@ -41,6 +46,8 @@ function LUI:GetOptions()
     local AutoAcceptRes = self:GetModule("AutoAcceptRes")
     ---@class Scaling
     local Scaling = self:GetModule("Scaling")
+    ---@class CookingButtons
+    local CookingButtons = self:GetModule("CookingButtons")
     ---@class Tooltips
     local Tooltips = self:GetModule("Tooltips")
 
@@ -177,6 +184,64 @@ function LUI:GetOptions()
                                     else
                                         AutoAcceptRes:Disable()
                                     end
+                                end,
+                                width = "full",
+                            },
+                        },
+                    },
+                    cookingButtons = {
+                        order = 27,
+                        type = "group",
+                        name = "Cooking Profession Buttons",
+                        inline = true,
+                        args = {
+                            description = {
+                                order = 1,
+                                type = "description",
+                                fontSize = "medium",
+                                name = "Adds two buttons above the professions window when Cooking is " ..
+                                    "open: one equips your Chef's Hat, one places a cooking-fire toy.\n",
+                                width = "full",
+                            },
+                            enabled = {
+                                order = 10,
+                                name = "Enable cooking buttons",
+                                type = "toggle",
+                                get = function() return self.db.global.cookingButtons.enabled end,
+                                set = function(_, val)
+                                    self.db.global.cookingButtons.enabled = val
+                                    if val then CookingButtons:Enable() else CookingButtons:Disable() end
+                                end,
+                                width = "full",
+                            },
+                            toyID = {
+                                order = 20,
+                                name = "Cooking-fire toy",
+                                desc = "Toy/item ID or a pasted item link. Examples: Maruuk Cooking Pot " ..
+                                    "= 198402, Muckpool Cookpot = 182780. The button is hidden if the " ..
+                                    "toy isn't in your collection.",
+                                type = "input",
+                                disabled = function() return not self.db.global.cookingButtons.enabled end,
+                                get = function() return tostring(self.db.global.cookingButtons.toyID or "") end,
+                                set = function(_, val)
+                                    self.db.global.cookingButtons.toyID = CookingButtons:ResolveToyID(val)
+                                    CookingButtons:Refresh()
+                                end,
+                            },
+                            status = {
+                                order = 30,
+                                type = "description",
+                                fontSize = "medium",
+                                name = function()
+                                    if not self.db.global.cookingButtons.enabled then return "" end
+                                    local id = CookingButtons:GetToyID()
+                                    if not id then return "|cffff8080No toy set|r -- toy button hidden." end
+                                    local resolved = C_ToyBox.GetToyInfo(id)
+                                    if PlayerHasToy(id) then
+                                        return format("|cff80ff80Using:|r %s", resolved or ("toy #" .. id))
+                                    end
+                                    return format("|cffff8080%s is not in your collection|r -- toy button hidden.",
+                                        resolved or ("Toy #" .. id))
                                 end,
                                 width = "full",
                             },
