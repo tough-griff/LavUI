@@ -24,6 +24,7 @@ Modules\ChatPanel.lua
 Modules\ChatSetup.lua
 Modules\CookingButtons.lua
 Modules\HideLootRolls.lua
+Modules\LavAuras.lua
 Modules\Merchant.lua
 Modules\Scaling.lua
 Modules\Tooltips.lua
