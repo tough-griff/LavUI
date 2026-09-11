@@ -16,6 +16,7 @@ function LUI:GetDefaults()
                 toyID = 198402,
             },
             tooltips = true,
+            merchant = true,
             -- Size and colours are read live from AtrocityEssentials, so the
             -- only things worth saving are which window we seat and where.
             chatPanel = {
@@ -50,6 +51,8 @@ function LUI:GetOptions()
     local CookingButtons = self:GetModule("CookingButtons")
     ---@class Tooltips
     local Tooltips = self:GetModule("Tooltips")
+    ---@class Merchant
+    local Merchant = self:GetModule("Merchant")
 
     ---@type AceConfig.OptionsTable
     return {
@@ -145,6 +148,19 @@ function LUI:GetOptions()
                         set = function(_, val)
                             self.db.global.tooltips = val
                             if val then Tooltips:Enable() else Tooltips:Disable() end
+                        end,
+                        width = "full",
+                    },
+                    merchant = {
+                        order = 23,
+                        name = "Extend atrocityEssentials vendor list",
+                        desc = "Shades already-known items green and shows owned/required amounts " ..
+                            "(green/red by affordability) on the atrocityEssentials vendor grid.",
+                        type = "toggle",
+                        get = function() return self.db.global.merchant end,
+                        set = function(_, val)
+                            self.db.global.merchant = val
+                            if val then Merchant:Enable() else Merchant:Disable() end
                         end,
                         width = "full",
                     },
