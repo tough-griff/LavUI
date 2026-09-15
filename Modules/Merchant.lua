@@ -91,7 +91,8 @@ end
 -- A text scan alone misses collected transmog APPEARANCES (their line differs
 -- from a recipe's, and on Midnight it can be a secret value the scan must skip),
 -- so the mount/toy/pet/appearance journals answer authoritatively; only recipes,
--- which have no collection API, fall back to the tooltip line.
+-- which have no collection API, fall back to the tooltip line. Housing decor has
+-- its own storage count via the catalog API, checked the same way.
 local knownCache = {}
 local ITEM_SPELL_KNOWN = _G.ITEM_SPELL_KNOWN
 local PET_KNOWN_PATTERN = _G.ITEM_PET_KNOWN and strmatch(_G.ITEM_PET_KNOWN, "[^%(（]+")
@@ -117,6 +118,14 @@ local function IsPetItemCollected(itemID)
     return IsPetCollected(select(13, C_PetJournal.GetPetInfoByItemID(itemID)))
 end
 
+-- Vendor-sold housing decor resolves through the catalog, not a collection journal;
+-- "owned" means you have any in storage, unredeemed, or already placed.
+local function IsDecorAlreadyOwned(itemID)
+    if not (C_HousingCatalog and C_HousingCatalog.GetCatalogEntryInfoByItem) then return false end
+    local info = C_HousingCatalog.GetCatalogEntryInfoByItem(itemID)
+    return info and (info.totalNumStored + info.remainingRedeemable + info.totalNumPlaced) > 0
+end
+
 -- Cosmetic-only on purpose: Blizzard shows "Already Known" for a collected
 -- appearance ITEM, not for ordinary stat gear that merely shares a known look,
 -- so gating on IsCosmeticItem keeps this from greening every vendor armour piece.
@@ -126,20 +135,25 @@ local function IsTransmogCollected(link)
     return C_TransmogCollection.PlayerHasTransmogByItemInfo(link) or false
 end
 
+-- Returns a tint kind ("known" or "decor") or false, so TintKnownRows can colour
+-- decor differently from mounts/pets/toys/transmog/recipes.
 local function IsAlreadyKnown(index)
     local link = index and _G.GetMerchantItemLink and _G.GetMerchantItemLink(index)
     if not link then return false end
-    if knownCache[link] then return true end
+    if knownCache[link] then return knownCache[link] end
 
-    local ok, known = pcall(function()
+    local ok, kind = pcall(function()
         local linkType, linkID = strmatch(link, "|H(%a+):(%d+)")
         linkID = tonumber(linkID)
         if linkType == "battlepet" then
-            return IsPetCollected(linkID)
+            return IsPetCollected(linkID) and "known" or false
         elseif linkType == "item" then
+            if IsDecorAlreadyOwned(linkID) then
+                return "decor"
+            end
             if IsMountCollected(linkID) or IsToyCollected(linkID)
                 or IsPetItemCollected(linkID) or IsTransmogCollected(link) then
-                return true
+                return "known"
             end
             -- Recipes have no collection API -- read the tooltip line instead,
             -- skipping any secret-valued line (Midnight).
@@ -150,7 +164,7 @@ local function IsAlreadyKnown(index)
                     if text ~= nil and not issecretvalue(text) then
                         if (ITEM_SPELL_KNOWN and strfind(text, ITEM_SPELL_KNOWN, 1, true))
                             or (PET_KNOWN_PATTERN and strmatch(text, PET_KNOWN_PATTERN)) then
-                            return true
+                            return "known"
                         end
                     end
                 end
@@ -159,25 +173,33 @@ local function IsAlreadyKnown(index)
         return false
     end)
 
-    if ok and known then
-        knownCache[link] = true
-        return true
+    if ok and kind then
+        knownCache[link] = kind
+        return kind
     end
     return false
 end
 
 -- AES colours each row's plate inside EMP:Refresh; post-hooking that lets us
--- repaint an already-known row green AFTER it, so a later Refresh never stomps us.
--- Green wins over AES's red, and the desaturate/fade it applies to unbuyable rows
--- is undone here so a known row reads as a clean green.
+-- repaint an already-known row AFTER it, so a later Refresh never stomps us.
+-- Green (known collectibles) / light blue (owned housing decor) both win over
+-- AES's red, and the desaturate/fade it applies to unbuyable rows is undone here
+-- so a known row reads as a clean, fully-opaque tint.
+local KNOWN_TINT_COLORS = {
+    known = { 0.05, 0.38, 0.05 },
+    decor = { 0.10, 0.35, 0.60 },
+}
+
 local function TintKnownRows(emp)
     if not LUI.db.global.merchant then return end
     if not (emp and emp:IsEnabled()) then return end
     for i = 1, (emp._pageSize or 30) do
         local row = _G["AE_MerchantRow" .. i]
-        if row and row:IsShown() and row.itemIndex and IsAlreadyKnown(row.itemIndex) then
+        local kind = row and row:IsShown() and row.itemIndex and IsAlreadyKnown(row.itemIndex)
+        local color = kind and KNOWN_TINT_COLORS[kind]
+        if color then
             if row.bd and row.bd.SetBackdropColor then
-                pcall(row.bd.SetBackdropColor, row.bd, 0.05, 0.38, 0.05, 0.90)
+                pcall(row.bd.SetBackdropColor, row.bd, color[1], color[2], color[3], 0.90)
             end
             if row.icon then row.icon:SetDesaturated(false) end
             row:SetAlpha(1)
