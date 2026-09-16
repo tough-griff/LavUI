@@ -15,6 +15,12 @@ function LUI:GetDefaults()
                 -- Toy/item ID or pasted item link; defaults to Maruuk Cooking Pot.
                 toyID = 198402,
             },
+            delveButton = {
+                enabled = false,
+                point = "CENTER",
+                x = 0,
+                y = -150,
+            },
             tooltips = true,
             merchant = true,
             -- Size and colours are read live from AtrocityEssentials, so the
@@ -49,6 +55,8 @@ function LUI:GetOptions()
     local Scaling = self:GetModule("Scaling")
     ---@class CookingButtons
     local CookingButtons = self:GetModule("CookingButtons")
+    ---@class DelveAssist
+    local DelveButton = self:GetModule("DelveAssist")
     ---@class Tooltips
     local Tooltips = self:GetModule("Tooltips")
     ---@class Merchant
@@ -258,6 +266,34 @@ function LUI:GetOptions()
                                     end
                                     return format("|cffff8080%s is not in your collection|r -- toy button hidden.",
                                         resolved or ("Toy #" .. id))
+                                end,
+                                width = "full",
+                            },
+                        },
+                    },
+                    delveButton = {
+                        order = 28,
+                        type = "group",
+                        name = "Delve Assist Button",
+                        inline = true,
+                        args = {
+                            description = {
+                                order = 1,
+                                type = "description",
+                                fontSize = "medium",
+                                name = "Shows a draggable button while you're inside a Delve. Clicking " ..
+                                    "it clears your target, targets Dundun, marks it with skull, and " ..
+                                    "pings it for the party to assist. Drag the button to reposition it.\n",
+                                width = "full",
+                            },
+                            enabled = {
+                                order = 10,
+                                name = "Enable delve assist button",
+                                type = "toggle",
+                                get = function() return self.db.global.delveButton.enabled end,
+                                set = function(_, val)
+                                    self.db.global.delveButton.enabled = val
+                                    if val then DelveButton:Enable() else DelveButton:Disable() end
                                 end,
                                 width = "full",
                             },

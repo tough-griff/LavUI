@@ -23,6 +23,7 @@ Modules\AutoAcceptRes.lua
 Modules\ChatPanel.lua
 Modules\ChatSetup.lua
 Modules\CookingButtons.lua
+Modules\DelveAssist.lua
 Modules\HideLootRolls.lua
 Modules\LavAuras.lua
 Modules\Merchant.lua
